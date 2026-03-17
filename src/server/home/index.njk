@@ -1,4 +1,5 @@
 {% extends 'layouts/page.njk' %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% block content %}
   {{ appHeading({
@@ -11,6 +12,10 @@
       <div class="govuk-body" data-testid="app-page-body">
         <p></p>
       </div>
+      {{ govukButton({
+        text: "Notifications",
+        href: "/notifications"
+      }) }}
     </div>
   </div>
 
