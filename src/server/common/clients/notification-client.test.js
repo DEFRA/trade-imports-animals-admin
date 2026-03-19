@@ -112,4 +112,47 @@ describe('#notificationClient', () => {
       })
     })
   })
+
+  describe('delete', () => {
+    describe('When delete is called successfully', () => {
+      test('Should send DELETE request to /notifications with reference numbers', async () => {
+        fetch.mockResolvedValueOnce({ ok: true })
+
+        await notificationClient.delete(['REF-123', 'REF-456'], traceId)
+
+        expect(fetch).toHaveBeenCalledTimes(1)
+        expect(fetch).toHaveBeenCalledWith(
+          'http://mock-backend/notifications',
+          {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-trace-id': traceId
+            },
+            body: JSON.stringify(['REF-123', 'REF-456'])
+          }
+        )
+      })
+    })
+
+    describe('When delete request fails', () => {
+      test('Should throw an error when delete request fails', async () => {
+        fetch.mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error'
+        })
+
+        await expect(
+          notificationClient.delete(['REF-123'], traceId)
+        ).rejects.toMatchObject({
+          message: 'Failed to delete notifications',
+          status: 500,
+          statusText: 'Internal Server Error'
+        })
+
+        expect(mockLoggerError).toHaveBeenCalledTimes(1)
+      })
+    })
+  })
 })

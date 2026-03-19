@@ -34,5 +34,30 @@ export const notificationClient = {
     }
 
     return response.json()
+  },
+
+  /**
+   * Deletes notifications from the backend by reference numbers
+   */
+  async delete(referenceNumbers, traceId) {
+    const response = await fetch(
+      `${tradeImportsAnimalsBackendUrl}/notifications`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          [tracingHeader]: traceId
+        },
+        body: JSON.stringify(referenceNumbers)
+      }
+    )
+
+    if (!response.ok) {
+      const error = new Error('Failed to delete notifications')
+      error.status = response.status
+      error.statusText = response.statusText
+      logger.error(`Failed to delete notifications: ${error.message}`)
+      throw error
+    }
   }
 }

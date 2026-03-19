@@ -1,4 +1,7 @@
-import { notificationsController } from './controller.js'
+import {
+  notificationsController,
+  deleteNotificationsController
+} from './controller.js'
 
 /**
  * Sets up the routes used in the notifications page.
@@ -13,6 +16,11 @@ export const notifications = {
           method: 'GET',
           path: '/notifications',
           ...notificationsController
+        },
+        {
+          method: 'DELETE',
+          path: '/notifications',
+          ...deleteNotificationsController
         }
       ])
     }

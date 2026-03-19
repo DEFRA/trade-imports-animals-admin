@@ -1,5 +1,6 @@
 {% extends 'layouts/page.njk' %}
-{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% block content %}
   {{ appHeading({
@@ -9,19 +10,104 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+
+      <div id="error-banner" hidden>
+        <div class="govuk-notification-banner" role="alert"
+             aria-labelledby="error-banner-title" data-module="govuk-notification-banner">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="error-banner-title">Important</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-body">There was a problem deleting the notifications. Please try again.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="success-banner" hidden>
+        <div class="govuk-notification-banner govuk-notification-banner--success" role="alert"
+             aria-labelledby="success-banner-title" data-module="govuk-notification-banner">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="success-banner-title">Success</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-body">Notifications deleted successfully. Redirecting in 3 seconds...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-notification-manual-delete">
+        <div class="app-notification-manual-delete__input">
+          {{ govukInput({
+            label: { text: "Reference number", classes: "govuk-label--s" },
+            id: "manual-reference-input",
+            name: "manualReferenceNumber",
+            type: "text",
+            spellcheck: false,
+            classes: "govuk-!-width-full"
+          }) }}
+        </div>
+        <div class="app-notification-manual-delete__button">
+          {{ govukButton({
+            text: "Delete",
+            classes: "govuk-button--warning govuk-!-margin-bottom-0",
+            attributes: {
+              id: "manual-delete-btn",
+              "aria-label": "Delete notification by reference number"
+            }
+          }) }}
+        </div>
+      </div>
+
       {% if notifications.length %}
-        {% set tableRows = [] %}
-        {% for n in notifications %}
-          {% set row = [{ text: n.referenceNumber }] %}
-          {% set tableRows = tableRows.concat([row]) %}
-        {% endfor %}
-        {{ govukTable({
-          head: [{ text: "Reference number" }],
-          rows: tableRows
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Reference number</th>
+              <th scope="col" class="govuk-table__header" aria-label="Select">
+                <input type="checkbox" id="select-all" aria-label="Select all notifications">
+              </th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for n in notifications %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ n.referenceNumber }}</td>
+                <td class="govuk-table__cell">
+                  <input type="checkbox" class="notification-checkbox" value="{{ n.referenceNumber }}" aria-label="Select notification {{ n.referenceNumber }}">
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <p id="delete-error" class="govuk-error-message" hidden>
+          <span class="govuk-visually-hidden">Error:</span>
+          Select at least one notification to delete
+        </p>
+        {{ govukButton({
+          text: "Delete",
+          classes: "govuk-button--warning",
+          attributes: { id: "delete-btn" }
         }) }}
+
       {% else %}
         <p class="govuk-body">There are no notifications.</p>
       {% endif %}
+
+      <dialog id="delete-dialog" aria-labelledby="dialog-title" aria-modal="true">
+        <h2 class="govuk-heading-m" id="dialog-title">
+          Are you sure you want to delete the following notifications?
+        </h2>
+        <ul class="govuk-list govuk-list--bullet" id="dialog-reference-list"></ul>
+        {{ govukButton({ text: "Confirm", attributes: { id: "confirm-delete-btn" } }) }}
+        {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", attributes: { id: "cancel-delete-btn" } }) }}
+      </dialog>
+
     </div>
   </div>
+{% endblock %}
+
+{% block bodyEnd %}
+  {{ super() }}
+  <script type="module" src="{{ getAssetPath('notifications.js') }}"></script>
 {% endblock %}

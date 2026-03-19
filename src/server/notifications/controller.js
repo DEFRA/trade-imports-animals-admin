@@ -3,7 +3,7 @@ import { notificationClient } from '../common/clients/notification-client.js'
 
 export const notificationsController = {
   async handler(request, h) {
-    const traceId = getTraceId()
+    const traceId = getTraceId() ?? ''
     const notifications = await notificationClient.getAll(request, traceId)
 
     return h.view('notifications/index', {
@@ -12,5 +12,29 @@ export const notificationsController = {
       breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Notifications' }],
       notifications
     })
+  }
+}
+
+export const deleteNotificationsController = {
+  options: {
+    payload: {
+      parse: true,
+      allow: 'application/json'
+    }
+  },
+  async handler(request, h) {
+    const referenceNumbers = request.payload
+
+    if (
+      !Array.isArray(referenceNumbers) ||
+      referenceNumbers.length === 0 ||
+      !referenceNumbers.every((r) => typeof r === 'string')
+    ) {
+      return h.response({ message: 'Invalid payload' }).code(400)
+    }
+
+    const traceId = getTraceId() ?? ''
+    await notificationClient.delete(referenceNumbers, traceId)
+    return h.response().code(204)
   }
 }
