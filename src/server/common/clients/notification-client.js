@@ -5,6 +5,7 @@ const tradeImportsAnimalsBackendUrl = config.get(
   'tradeImportsAnimalsBackendApi.baseUrl'
 )
 const tracingHeader = config.get('tracing.header')
+const adminSecret = config.get('tradeImportsAnimalsAdminSecret')
 const logger = createLogger()
 
 export const notificationClient = {
@@ -46,7 +47,8 @@ export const notificationClient = {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          [tracingHeader]: traceId
+          [tracingHeader]: traceId,
+          'Trade-Imports-Animals-Admin-Secret': adminSecret
         },
         body: JSON.stringify(referenceNumbers)
       }
