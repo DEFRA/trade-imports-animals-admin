@@ -15,7 +15,7 @@ const manifestPath = path.join(
 let webpackManifest
 
 export function context(request) {
-  if (!webpackManifest) {
+  if (!webpackManifest || config.get('isDevelopment')) {
     try {
       webpackManifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
     } catch (error) {

@@ -213,6 +213,21 @@ export const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  tradeImportsAnimalsBackendApi: {
+    baseUrl: {
+      doc: 'Trade Imports Animals Backend API base URL',
+      format: String,
+      default: 'http://localhost:8085',
+      env: 'TRADE_IMPORTS_ANIMALS_BACKEND_URL'
+    }
+  },
+  tradeImportsAnimalsAdminSecret: {
+    doc: 'Secret passed to the backend to authenticate requests from this admin application',
+    format: String,
+    default: 'local-trade-imports-animals-admin-secret',
+    env: 'TRADE_IMPORTS_ANIMALS_ADMIN_SECRET',
+    sensitive: true
   }
 })
 
