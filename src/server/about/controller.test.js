@@ -1,6 +1,16 @@
 import { createServer } from '../server.js'
 import { statusCodes } from '../common/constants/status-codes.js'
 
+vi.mock('../../config/config.js', async (importOriginal) => {
+  const { config } = await importOriginal()
+  const originalGet = config.get.bind(config)
+  return {
+    config: {
+      get: (key) => (key === 'auth.enabled' ? false : originalGet(key))
+    }
+  }
+})
+
 describe('#aboutController', () => {
   let server
 
