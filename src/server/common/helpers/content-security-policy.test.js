@@ -1,5 +1,15 @@
 import { createServer } from '../../server.js'
 
+vi.mock('../../../config/config.js', async (importOriginal) => {
+  const { config } = await importOriginal()
+  const originalGet = config.get.bind(config)
+  return {
+    config: {
+      get: (key) => (key === 'auth.enabled' ? false : originalGet(key))
+    }
+  }
+})
+
 describe('#contentSecurityPolicy', () => {
   let server
 
