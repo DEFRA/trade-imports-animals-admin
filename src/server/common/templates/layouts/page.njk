@@ -6,7 +6,7 @@
 
 {# Import custom components globally #}
 {% from "heading/macro.njk" import appHeading %}
-
+{% from "service-header/macro.njk" import appServiceHeader %}
 {% set mainClasses = "app-main-wrapper" %}
 
 {% block head %}
@@ -34,6 +34,8 @@
 {% endblock %}
 
 {% block beforeContent %}
+  {{ appServiceHeader({ userSession: userSession }) }}
+
   {% if breadcrumbs.length > 1 %}
     {{ govukBreadcrumbs({
       items: breadcrumbs

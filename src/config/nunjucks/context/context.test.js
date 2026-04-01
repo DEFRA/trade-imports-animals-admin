@@ -33,19 +33,20 @@ describe('context and cache', () => {
         contextImport = await import('./context.js')
       })
 
-      beforeEach(() => {
+      beforeEach(async () => {
         // Return JSON string
         mockReadFileSync.mockReturnValue(`{
         "application.js": "javascripts/application.js",
         "stylesheets/application.scss": "stylesheets/application.css"
       }`)
 
-        contextResult = contextImport.context(mockRequest)
+        contextResult = await contextImport.context(mockRequest)
       })
 
       test('Should provide expected context', () => {
         expect(contextResult).toEqual({
           assetPath: '/public/assets',
+          authEnabled: true,
           breadcrumbs: [],
           getAssetPath: expect.any(Function),
           navigation: [
@@ -61,7 +62,8 @@ describe('context and cache', () => {
             }
           ],
           serviceName: 'trade-imports-animals-admin',
-          serviceUrl: '/'
+          serviceUrl: '/',
+          userSession: { isAuthenticated: false }
         })
       })
 
@@ -114,14 +116,14 @@ describe('context and cache', () => {
         contextImport = await import('./context.js')
       })
 
-      beforeEach(() => {
+      beforeEach(async () => {
         // Return JSON string
         mockReadFileSync.mockReturnValue(`{
         "application.js": "javascripts/application.js",
         "stylesheets/application.scss": "stylesheets/application.css"
       }`)
 
-        contextResult = contextImport.context(mockRequest)
+        contextResult = await contextImport.context(mockRequest)
       })
 
       test('Should read file', () => {
@@ -135,6 +137,7 @@ describe('context and cache', () => {
       test('Should provide expected context', () => {
         expect(contextResult).toEqual({
           assetPath: '/public/assets',
+          authEnabled: true,
           breadcrumbs: [],
           getAssetPath: expect.any(Function),
           navigation: [
@@ -150,7 +153,8 @@ describe('context and cache', () => {
             }
           ],
           serviceName: 'trade-imports-animals-admin',
-          serviceUrl: '/'
+          serviceUrl: '/',
+          userSession: { isAuthenticated: false }
         })
       })
     })

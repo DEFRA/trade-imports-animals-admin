@@ -14,7 +14,7 @@ const manifestPath = path.join(
 
 let webpackManifest
 
-export function context(request) {
+async function context(request) {
   if (!webpackManifest || config.get('isDevelopment')) {
     try {
       webpackManifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
@@ -23,15 +23,31 @@ export function context(request) {
     }
   }
 
+  const authData = request.auth?.isAuthenticated
+    ? await request.server.app.cache.get(request.auth.credentials.sessionId)
+    : null
+
   return {
     assetPath: `${assetPath}/assets`,
     serviceName: config.get('serviceName'),
     serviceUrl: '/',
+    authEnabled: config.get('auth.enabled'),
     breadcrumbs: [],
     navigation: buildNavigation(request),
+    userSession: authData
+      ? {
+          isAuthenticated: true,
+          displayName: authData.displayName || authData.email || 'User',
+          email: authData.email
+        }
+      : {
+          isAuthenticated: false
+        },
     getAssetPath(asset) {
       const webpackAssetPath = webpackManifest?.[asset]
       return `${assetPath}/${webpackAssetPath ?? asset}`
     }
   }
 }
+
+export { context }

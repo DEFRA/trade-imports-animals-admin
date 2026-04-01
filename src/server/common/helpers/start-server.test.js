@@ -3,6 +3,16 @@ import { vi } from 'vitest'
 import hapi from '@hapi/hapi'
 import { statusCodes } from '../constants/status-codes.js'
 
+vi.mock('../../../config/config.js', async (importOriginal) => {
+  const { config } = await importOriginal()
+  const originalGet = config.get.bind(config)
+  return {
+    config: {
+      get: (key) => (key === 'auth.enabled' ? false : originalGet(key))
+    }
+  }
+})
+
 describe('#startServer', () => {
   let createServerSpy
   let hapiServerSpy

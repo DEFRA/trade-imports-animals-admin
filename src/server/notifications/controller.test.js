@@ -2,6 +2,16 @@ import { createServer } from '../server.js'
 import { statusCodes } from '../common/constants/status-codes.js'
 import { notificationClient } from '../common/clients/notification-client.js'
 
+vi.mock('../../config/config.js', async (importOriginal) => {
+  const { config } = await importOriginal()
+  const originalGet = config.get.bind(config)
+  return {
+    config: {
+      get: (key) => (key === 'auth.enabled' ? false : originalGet(key))
+    }
+  }
+})
+
 vi.mock('../common/clients/notification-client.js', () => ({
   notificationClient: {
     getAll: vi.fn(),

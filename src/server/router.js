@@ -4,7 +4,9 @@ import { home } from './home/index.js'
 import { about } from './about/index.js'
 import { health } from './health/index.js'
 import { notifications } from './notifications/index.js'
+import { signout } from './signout/index.js'
 import { serveStaticFiles } from './common/helpers/serve-static-files.js'
+import { config } from '../config/config.js'
 
 export const router = {
   plugin: {
@@ -16,7 +18,15 @@ export const router = {
       await server.register([health])
 
       // Application specific routes, add your own routes here
-      await server.register([home, about, notifications])
+
+      const authEnabled = config.get('auth.enabled')
+      const routes = [home, about, notifications]
+
+      if (authEnabled) {
+        routes.push(signout)
+      }
+
+      await server.register(routes)
 
       // Static assets
       await server.register([serveStaticFiles])
