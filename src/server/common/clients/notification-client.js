@@ -40,7 +40,7 @@ export const notificationClient = {
   /**
    * Deletes notifications from the backend by reference numbers
    */
-  async delete(referenceNumbers, traceId) {
+  async delete(referenceNumbers, traceId, userId) {
     const response = await fetch(
       `${tradeImportsAnimalsBackendUrl}/notifications`,
       {
@@ -48,6 +48,7 @@ export const notificationClient = {
         headers: {
           'Content-Type': 'application/json',
           [tracingHeader]: traceId,
+          'User-Id': userId,
           'Trade-Imports-Animals-Admin-Secret': adminSecret
         },
         body: JSON.stringify(referenceNumbers)

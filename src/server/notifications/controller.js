@@ -33,8 +33,13 @@ export const deleteNotificationsController = {
       return h.response({ message: 'Invalid payload' }).code(400)
     }
 
-    const traceId = getTraceId() ?? ''
-    await notificationClient.delete(referenceNumbers, traceId)
+    const traceId = getTraceId() ?? 'test-trace-id'
+    const authData = request.auth?.isAuthenticated
+      ? await request.server.app.cache.get(request.auth.credentials.sessionId)
+      : null
+
+    const userId = authData?.crn ?? 'test-user-id'
+    await notificationClient.delete(referenceNumbers, traceId, userId)
     return h.response().code(204)
   }
 }

@@ -126,7 +126,8 @@ describe('#notificationsController', () => {
       expect(statusCode).toBe(statusCodes.noContent)
       expect(notificationClient.delete).toHaveBeenCalledWith(
         ['REF-123', 'REF-456'],
-        expect.any(String)
+        'test-trace-id',
+        'test-user-id'
       )
     })
 
