@@ -19,7 +19,9 @@
     classes: "app-header",
     containerClasses: "govuk-width-container"
   }) }}
+{% endblock %}
 
+{% block govukServiceNavigation %}
   {{ govukServiceNavigation({
     serviceName: serviceName,
     serviceUrl: serviceUrl,
