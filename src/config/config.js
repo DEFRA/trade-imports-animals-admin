@@ -189,7 +189,7 @@ export const config = convict({
     serviceId: {
       doc: 'Defra ID service ID',
       format: String,
-      default: 'trade-imports-animals-frontend',
+      default: 'trade-imports-animals-admin',
       env: 'DEFRA_ID_SERVICE_ID'
     },
     policy: {
