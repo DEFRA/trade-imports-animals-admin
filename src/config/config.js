@@ -201,13 +201,13 @@ export const config = convict({
     redirectUrl: {
       doc: 'Redirect URL after Defra ID sign-in (OIDC callback)',
       format: String,
-      default: 'http://localhost:3000/auth/sign-in-oidc',
+      default: `http://localhost:${process.env.PORT ?? 3000}/auth/sign-in-oidc`,
       env: 'DEFRA_ID_REDIRECT_URL'
     },
     signOutRedirectUrl: {
       doc: 'Redirect URL after Defra ID sign-out',
       format: String,
-      default: 'http://localhost:3000/auth/sign-out-oidc',
+      default: `http://localhost:${process.env.PORT ?? 3000}/auth/sign-out-oidc`,
       env: 'DEFRA_ID_SIGN_OUT_REDIRECT_URL'
     },
     signOutHostnameRewrite: {
