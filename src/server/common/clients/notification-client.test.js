@@ -56,32 +56,24 @@ describe('#notificationClient', () => {
     vi.restoreAllMocks()
   })
 
-  describe('getAll', () => {
-    describe('When getAll is called successfully', () => {
-      test('Should send GET request to /notifications and return all notifications', async () => {
-        const responseBody = [
-          {
-            referenceNumber: 'REF-123',
-            origin: { countryCode: 'GB' },
-            commodity: 'Fish'
-          },
-          {
-            referenceNumber: 'REF-456',
-            origin: { countryCode: 'FR' },
-            commodity: 'Cat'
-          }
-        ]
+  describe('getAllReferenceNumbers', () => {
+    describe('When getAllReferenceNumbers is called successfully', () => {
+      test('Should send GET request to /notifications/reference-numbers and return reference number strings', async () => {
+        const responseBody = ['REF-123', 'REF-456']
 
         fetch.mockResolvedValueOnce({
           ok: true,
           json: vi.fn().mockResolvedValue(responseBody)
         })
 
-        const result = await notificationClient.getAll(mockRequest, traceId)
+        const result = await notificationClient.getAllReferenceNumbers(
+          mockRequest,
+          traceId
+        )
 
         expect(fetch).toHaveBeenCalledTimes(1)
         expect(fetch).toHaveBeenCalledWith(
-          'http://mock-backend/notifications',
+          'http://mock-backend/notifications/reference-numbers',
           {
             method: 'GET',
             headers: {
@@ -95,19 +87,18 @@ describe('#notificationClient', () => {
       })
     })
 
-    describe('When getAll request fails', () => {
-      test('Should throw an error when getAll request fails', async () => {
+    describe('When getAllReferenceNumbers request fails', () => {
+      test('Should throw an error when getAllReferenceNumbers request fails', async () => {
         fetch.mockResolvedValueOnce({
           ok: false,
           status: 500,
-          statusText: 'Internal Server Error',
-          json: vi.fn().mockResolvedValue({ message: 'Server error' })
+          statusText: 'Internal Server Error'
         })
 
         await expect(
-          notificationClient.getAll(mockRequest, traceId)
+          notificationClient.getAllReferenceNumbers(mockRequest, traceId)
         ).rejects.toMatchObject({
-          message: 'Failed to get all notifications',
+          message: 'Failed to get all notification reference numbers',
           status: 500,
           statusText: 'Internal Server Error'
         })
