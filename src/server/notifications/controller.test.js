@@ -14,7 +14,7 @@ vi.mock('../../config/config.js', async (importOriginal) => {
 
 vi.mock('../common/clients/notification-client.js', () => ({
   notificationClient: {
-    getAll: vi.fn(),
+    getAllReferenceNumbers: vi.fn(),
     delete: vi.fn()
   }
 }))
@@ -37,9 +37,7 @@ describe('#notificationsController', () => {
 
   describe('GET /notifications', () => {
     test('Should render notifications table with reference numbers', async () => {
-      notificationClient.getAll.mockResolvedValue([
-        { referenceNumber: 'REF-123' }
-      ])
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(['REF-123'])
 
       const { result, statusCode } = await server.inject({
         method: 'GET',
@@ -76,7 +74,7 @@ describe('#notificationsController', () => {
     })
 
     test('Should render empty state when no notifications exist', async () => {
-      notificationClient.getAll.mockResolvedValue([])
+      notificationClient.getAllReferenceNumbers.mockResolvedValue([])
 
       const { result, statusCode } = await server.inject({
         method: 'GET',
@@ -100,8 +98,10 @@ describe('#notificationsController', () => {
       expect(result).toEqual(expect.stringContaining('id="error-banner"'))
     })
 
-    test('Should return 500 when notificationClient.getAll throws', async () => {
-      notificationClient.getAll.mockRejectedValue(new Error('Backend error'))
+    test('Should return 500 when notificationClient.getAllReferenceNumbers throws', async () => {
+      notificationClient.getAllReferenceNumbers.mockRejectedValue(
+        new Error('Backend error')
+      )
 
       const { statusCode } = await server.inject({
         method: 'GET',

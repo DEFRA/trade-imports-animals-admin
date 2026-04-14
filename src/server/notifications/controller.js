@@ -4,13 +4,16 @@ import { notificationClient } from '../common/clients/notification-client.js'
 export const notificationsController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
-    const notifications = await notificationClient.getAll(request, traceId)
+    const referenceNumbers = await notificationClient.getAllReferenceNumbers(
+      request,
+      traceId
+    )
 
     return h.view('notifications/index', {
       pageTitle: 'Notifications',
       heading: 'Notifications',
       breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Notifications' }],
-      notifications
+      referenceNumbers
     })
   }
 }

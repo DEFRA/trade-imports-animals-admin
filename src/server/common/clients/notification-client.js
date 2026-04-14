@@ -10,11 +10,11 @@ const logger = createLogger()
 
 export const notificationClient = {
   /**
-   * Retrieves all notifications from the backend
+   * Retrieves all notification reference numbers from the backend
    */
-  async getAll(_request, traceId) {
+  async getAllReferenceNumbers(_request, traceId) {
     const response = await fetch(
-      `${tradeImportsAnimalsBackendUrl}/notifications`,
+      `${tradeImportsAnimalsBackendUrl}/notifications/reference-numbers`,
       {
         method: 'GET',
         headers: {
@@ -25,11 +25,15 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error('Failed to get all notifications')
+      const error = new Error(
+        'Failed to get all notification reference numbers'
+      )
       error.status = response.status
       error.statusText = response.statusText
 
-      logger.error(`Failed to get all notifications: ${error.message}`)
+      logger.error(
+        `Failed to get all notification reference numbers: ${error.message}`
+      )
 
       throw error
     }
