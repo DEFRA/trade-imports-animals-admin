@@ -42,6 +42,62 @@ export const notificationClient = {
   },
 
   /**
+   * Retrieves a single notification with its accompanying documents
+   */
+  async getByRef(referenceNumber, traceId) {
+    const response = await fetch(
+      `${tradeImportsAnimalsBackendUrl}/notifications/${referenceNumber}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          [tracingHeader]: traceId
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const error = new Error(`Failed to get notification ${referenceNumber}`)
+      error.status = response.status
+      error.statusText = response.statusText
+      logger.error(
+        `Failed to get notification ${referenceNumber}: ${response.status}`
+      )
+      throw error
+    }
+
+    return response.json()
+  },
+
+  /**
+   * Streams a document file from the backend (which fetches from S3).
+   * Returns the raw fetch Response so the caller can pipe headers and body.
+   */
+  async streamFile(uploadId, fileId, traceId) {
+    const response = await fetch(
+      `${tradeImportsAnimalsBackendUrl}/document-uploads/${uploadId}/files/${fileId}`,
+      {
+        method: 'GET',
+        headers: {
+          [tracingHeader]: traceId
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const error = new Error(
+        `Failed to stream file ${fileId} from upload ${uploadId}`
+      )
+      error.status = response.status
+      error.statusText = response.statusText
+      logger.error(`Failed to stream file: ${response.status}`)
+      throw error
+    }
+
+    return response
+  },
+
+  /**
    * Deletes notifications from the backend by reference numbers
    */
   async delete(referenceNumbers, traceId, userId) {

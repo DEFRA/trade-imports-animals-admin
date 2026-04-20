@@ -1,0 +1,198 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Notification"
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <h2 class="govuk-heading-m">Notification details</h2>
+
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Reference number" },
+            value: { text: notification.referenceNumber }
+          },
+          {
+            key: { text: "Created" },
+            value: { text: notification.created | formatDate('d MMMM yyyy HH:mm') if notification.created else "—" }
+          },
+          {
+            key: { text: "Updated" },
+            value: { text: notification.updated | formatDate('d MMMM yyyy HH:mm') if notification.updated else "—" }
+          }
+        ]
+      }) }}
+
+      <h2 class="govuk-heading-m">Origin</h2>
+
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Country code" },
+            value: { text: notification.origin.countryCode if notification.origin else "—" }
+          },
+          {
+            key: { text: "Requires region code" },
+            value: { text: notification.origin.requiresRegionCode if notification.origin else "—" }
+          },
+          {
+            key: { text: "Internal reference" },
+            value: { text: notification.origin.internalReference if notification.origin.internalReference else "—" }
+          }
+        ]
+      }) }}
+
+      <h2 class="govuk-heading-m">Commodity</h2>
+
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Commodity name" },
+            value: { text: notification.commodity.name if notification.commodity else "—" }
+          },
+          {
+            key: { text: "Reason for import" },
+            value: { text: notification.reasonForImport if notification.reasonForImport else "—" }
+          },
+          {
+            key: { text: "CPH number" },
+            value: { text: notification.cphNumber if notification.cphNumber else "—" }
+          }
+        ]
+      }) }}
+
+      {% if notification.commodity.commodityComplement and notification.commodity.commodityComplement.length %}
+        {% for complement in notification.commodity.commodityComplement %}
+          <h3 class="govuk-heading-s">Commodity complement {{ loop.index }}</h3>
+          {{ govukSummaryList({
+            rows: [
+              {
+                key: { text: "Type of commodity" },
+                value: { text: complement.typeOfCommodity if complement.typeOfCommodity else "—" }
+              },
+              {
+                key: { text: "Total number of animals" },
+                value: { text: complement.totalNoOfAnimals if complement.totalNoOfAnimals else "—" }
+              },
+              {
+                key: { text: "Weight of batch" },
+                value: { text: complement.weightOfBatch if complement.weightOfBatch else "—" }
+              }
+            ]
+          }) }}
+
+          {% if complement.species and complement.species.length %}
+            <table class="govuk-table govuk-!-margin-bottom-6">
+              <caption class="govuk-table__caption govuk-body">Species</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">Species</th>
+                  <th scope="col" class="govuk-table__header">Count</th>
+                  <th scope="col" class="govuk-table__header">Ear tag</th>
+                  <th scope="col" class="govuk-table__header">Passport</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                {% for species in complement.species %}
+                  <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">{{ species.text }} ({{ species.value }})</td>
+                    <td class="govuk-table__cell">{{ species.noOfAnimals if species.noOfAnimals else "—" }}</td>
+                    <td class="govuk-table__cell">{{ species.earTag if species.earTag else "—" }}</td>
+                    <td class="govuk-table__cell">{{ species.passport if species.passport else "—" }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+      {% if notification.additionalDetails %}
+        <h2 class="govuk-heading-m">Additional details</h2>
+        {{ govukSummaryList({
+          rows: [
+            {
+              key: { text: "Certified for" },
+              value: { text: notification.additionalDetails.certifiedFor if notification.additionalDetails.certifiedFor else "—" }
+            },
+            {
+              key: { text: "Unweaned animals" },
+              value: { text: notification.additionalDetails.unweanedAnimals if notification.additionalDetails.unweanedAnimals else "—" }
+            }
+          ]
+        }) }}
+      {% endif %}
+
+      <h2 class="govuk-heading-m">Accompanying documents</h2>
+
+      {% if notification.accompanyingDocuments and notification.accompanyingDocuments.length %}
+        {% for document in notification.accompanyingDocuments %}
+          <h3 class="govuk-heading-s">Document {{ loop.index }}</h3>
+
+          {% if document.scanStatus === 'COMPLETE' %}
+            {% set scanStatusTag %}{{ govukTag({ text: "Safe", classes: "govuk-tag--green" }) }}{% endset %}
+          {% elif document.scanStatus === 'REJECTED' %}
+            {% set scanStatusTag %}{{ govukTag({ text: "Virus found", classes: "govuk-tag--red" }) }}{% endset %}
+          {% else %}
+            {% set scanStatusTag %}{{ govukTag({ text: "Pending", classes: "govuk-tag--yellow" }) }}{% endset %}
+          {% endif %}
+
+          {% set fileLinksHtml %}
+            {% if document.files and document.files.length %}
+              <ul class="govuk-list">
+                {% for file in document.files %}
+                  {% if file.fileStatus === 'complete' and document.scanStatus === 'COMPLETE' %}
+                    <li>
+                      <a href="/notifications/{{ notification.referenceNumber }}/documents/{{ document.uploadId }}/files/{{ file.fileId }}" class="govuk-link">
+                        {{ file.filename }}
+                      </a>
+                    </li>
+                  {% else %}
+                    <li>{{ file.filename }} (not available)</li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            {% else %}
+              No files uploaded yet
+            {% endif %}
+          {% endset %}
+
+          {{ govukSummaryList({
+            rows: [
+              {
+                key: { text: "Document type" },
+                value: { text: document.documentType if document.documentType else "—" }
+              },
+              {
+                key: { text: "Reference" },
+                value: { text: document.documentReference if document.documentReference else "—" }
+              },
+              {
+                key: { text: "Date of issue" },
+                value: { text: document.dateOfIssue | formatDate('d MMMM yyyy') if document.dateOfIssue else "—" }
+              },
+              {
+                key: { text: "Scan status" },
+                value: { html: scanStatusTag }
+              },
+              {
+                key: { text: "Files" },
+                value: { html: fileLinksHtml }
+              }
+            ]
+          }) }}
+        {% endfor %}
+      {% else %}
+        <p class="govuk-body">No accompanying documents uploaded.</p>
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}

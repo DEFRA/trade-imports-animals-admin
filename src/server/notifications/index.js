@@ -1,6 +1,8 @@
 import {
   notificationsController,
-  deleteNotificationsController
+  deleteNotificationsController,
+  viewNotificationController,
+  downloadDocumentController
 } from './controller.js'
 
 /**
@@ -16,6 +18,16 @@ export const notifications = {
           method: 'GET',
           path: '/notifications',
           ...notificationsController
+        },
+        {
+          method: 'GET',
+          path: '/notifications/{ref}',
+          ...viewNotificationController
+        },
+        {
+          method: 'GET',
+          path: '/notifications/{ref}/documents/{uploadId}/files/{fileId}',
+          ...downloadDocumentController
         },
         {
           method: 'DELETE',
