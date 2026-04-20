@@ -15,6 +15,8 @@ vi.mock('../../config/config.js', async (importOriginal) => {
 vi.mock('../common/clients/notification-client.js', () => ({
   notificationClient: {
     getAllReferenceNumbers: vi.fn(),
+    getByRef: vi.fn(),
+    streamFile: vi.fn(),
     delete: vi.fn()
   }
 }))
@@ -106,6 +108,152 @@ describe('#notificationsController', () => {
       const { statusCode } = await server.inject({
         method: 'GET',
         url: '/notifications'
+      })
+
+      expect(statusCode).toBe(statusCodes.internalServerError)
+    })
+  })
+
+  describe('GET /notifications/{ref}', () => {
+    const referenceNumber = 'DRAFT.IMP.2026.abc123'
+
+    const notificationFixture = {
+      referenceNumber,
+      origin: {
+        countryCode: 'GB',
+        requiresRegionCode: 'true',
+        internalReference: 'REF-001'
+      },
+      commodity: { name: 'Live bovine animals', commodityComplement: [] },
+      reasonForImport: 'PERMANENT',
+      additionalDetails: {
+        certifiedFor: 'HUMAN_CONSUMPTION',
+        unweanedAnimals: 'false'
+      },
+      cphNumber: null,
+      created: '2026-04-20T11:20:06',
+      updated: '2026-04-20T11:20:06',
+      accompanyingDocuments: [
+        {
+          uploadId: 'upload-abc-123',
+          documentType: 'ITAHC',
+          documentReference: 'UK/GB/2026/001',
+          dateOfIssue: '2026-01-15T00:00:00Z',
+          scanStatus: 'COMPLETE',
+          files: [
+            {
+              fileId: 'file-xyz-456',
+              filename: 'health-cert.pdf',
+              fileStatus: 'complete'
+            }
+          ]
+        }
+      ]
+    }
+
+    test('Should render notification details page with all key fields', async () => {
+      notificationClient.getByRef.mockResolvedValue(notificationFixture)
+
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: `/notifications/${referenceNumber}`
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(result).toEqual(expect.stringContaining(referenceNumber))
+      expect(result).toEqual(expect.stringContaining('GB'))
+      expect(result).toEqual(expect.stringContaining('ITAHC'))
+      expect(result).toEqual(expect.stringContaining('UK/GB/2026/001'))
+      expect(result).toEqual(expect.stringContaining('HUMAN_CONSUMPTION'))
+    })
+
+    test('Should render a download link for completed scanned files', async () => {
+      notificationClient.getByRef.mockResolvedValue(notificationFixture)
+
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: `/notifications/${referenceNumber}`
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(result).toEqual(
+        expect.stringContaining(
+          `/notifications/${referenceNumber}/documents/upload-abc-123/files/file-xyz-456`
+        )
+      )
+      expect(result).toEqual(expect.stringContaining('health-cert.pdf'))
+    })
+
+    test('Should render empty accompanying documents state when none uploaded', async () => {
+      notificationClient.getByRef.mockResolvedValue({
+        ...notificationFixture,
+        accompanyingDocuments: []
+      })
+
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: `/notifications/${referenceNumber}`
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(result).toEqual(
+        expect.stringContaining('No accompanying documents uploaded.')
+      )
+    })
+
+    test('Should return 500 when notificationClient.getByRef throws', async () => {
+      notificationClient.getByRef.mockRejectedValue(new Error('Backend error'))
+
+      const { statusCode } = await server.inject({
+        method: 'GET',
+        url: `/notifications/${referenceNumber}`
+      })
+
+      expect(statusCode).toBe(statusCodes.internalServerError)
+    })
+  })
+
+  describe('GET /notifications/{ref}/documents/{uploadId}/files/{fileId}', () => {
+    test('Should stream file with correct content headers', async () => {
+      const fileContent = 'PDF file content'
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(fileContent))
+          controller.close()
+        }
+      })
+
+      notificationClient.streamFile.mockResolvedValue({
+        headers: new Headers({
+          'content-type': 'application/pdf',
+          'content-disposition': 'attachment; filename="health-cert.pdf"'
+        }),
+        body: stream
+      })
+
+      const { statusCode, headers } = await server.inject({
+        method: 'GET',
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123/files/file-xyz-456'
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(headers['content-type']).toContain('application/pdf')
+      expect(headers['content-disposition']).toBe(
+        'attachment; filename="health-cert.pdf"'
+      )
+      expect(notificationClient.streamFile).toHaveBeenCalledWith(
+        'upload-abc-123',
+        'file-xyz-456',
+        expect.any(String)
+      )
+    })
+
+    test('Should return 500 when notificationClient.streamFile throws', async () => {
+      notificationClient.streamFile.mockRejectedValue(new Error('S3 error'))
+
+      const { statusCode } = await server.inject({
+        method: 'GET',
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123/files/file-xyz-456'
       })
 
       expect(statusCode).toBe(statusCodes.internalServerError)
