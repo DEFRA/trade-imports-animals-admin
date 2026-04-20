@@ -150,7 +150,7 @@
                 {% for file in document.files %}
                   {% if file.fileStatus === 'complete' and document.scanStatus === 'COMPLETE' %}
                     <li>
-                      <a href="/notifications/{{ notification.referenceNumber }}/documents/{{ document.uploadId }}/files/{{ file.fileId }}" class="govuk-link">
+                      <a href="/notifications/{{ notification.referenceNumber }}/documents/{{ document.uploadId }}" class="govuk-link">
                         {{ file.filename }}
                       </a>
                     </li>

@@ -178,7 +178,7 @@ describe('#notificationsController', () => {
       expect(statusCode).toBe(statusCodes.ok)
       expect(result).toEqual(
         expect.stringContaining(
-          `/notifications/${referenceNumber}/documents/upload-abc-123/files/file-xyz-456`
+          `/notifications/${referenceNumber}/documents/upload-abc-123`
         )
       )
       expect(result).toEqual(expect.stringContaining('health-cert.pdf'))
@@ -233,7 +233,7 @@ describe('#notificationsController', () => {
 
       const { statusCode, headers } = await server.inject({
         method: 'GET',
-        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123/files/file-xyz-456'
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123'
       })
 
       expect(statusCode).toBe(statusCodes.ok)
@@ -243,7 +243,6 @@ describe('#notificationsController', () => {
       )
       expect(notificationClient.streamFile).toHaveBeenCalledWith(
         'upload-abc-123',
-        'file-xyz-456',
         expect.any(String)
       )
     })
@@ -253,7 +252,7 @@ describe('#notificationsController', () => {
 
       const { statusCode } = await server.inject({
         method: 'GET',
-        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123/files/file-xyz-456'
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123'
       })
 
       expect(statusCode).toBe(statusCodes.internalServerError)

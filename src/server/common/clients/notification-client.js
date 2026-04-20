@@ -70,12 +70,12 @@ export const notificationClient = {
   },
 
   /**
-   * Streams a document file from the backend (which fetches from S3).
+   * Streams the document file for an upload session from the backend (which fetches from S3).
    * Returns the raw fetch Response so the caller can pipe headers and body.
    */
-  async streamFile(uploadId, fileId, traceId) {
+  async streamFile(uploadId, traceId) {
     const response = await fetch(
-      `${tradeImportsAnimalsBackendUrl}/document-uploads/${uploadId}/files/${fileId}`,
+      `${tradeImportsAnimalsBackendUrl}/document-uploads/${uploadId}/file`,
       {
         method: 'GET',
         headers: {
@@ -85,9 +85,7 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error(
-        `Failed to stream file ${fileId} from upload ${uploadId}`
-      )
+      const error = new Error(`Failed to stream file for upload ${uploadId}`)
       error.status = response.status
       error.statusText = response.statusText
       logger.error(`Failed to stream file: ${response.status}`)

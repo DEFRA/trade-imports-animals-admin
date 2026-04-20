@@ -41,11 +41,10 @@ export const viewNotificationController = {
 export const downloadDocumentController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
-    const { uploadId, fileId } = request.params
+    const { uploadId } = request.params
 
     const backendResponse = await notificationClient.streamFile(
       uploadId,
-      fileId,
       traceId
     )
 

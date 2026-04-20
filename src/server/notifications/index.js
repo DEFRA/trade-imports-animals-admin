@@ -26,7 +26,7 @@ export const notifications = {
         },
         {
           method: 'GET',
-          path: '/notifications/{ref}/documents/{uploadId}/files/{fileId}',
+          path: '/notifications/{ref}/documents/{uploadId}',
           ...downloadDocumentController
         },
         {

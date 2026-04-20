@@ -165,7 +165,7 @@ describe('#notificationClient', () => {
 
   describe('streamFile', () => {
     describe('When streamFile is called successfully', () => {
-      test('Should send GET request to /document-uploads/{uploadId}/files/{fileId} and return raw response', async () => {
+      test('Should send GET request to /document-uploads/{uploadId}/file and return raw response', async () => {
         const mockResponse = {
           ok: true,
           headers: new Headers({ 'content-type': 'application/pdf' }),
@@ -176,13 +176,12 @@ describe('#notificationClient', () => {
 
         const result = await notificationClient.streamFile(
           'upload-abc-123',
-          'file-xyz-456',
           traceId
         )
 
         expect(fetch).toHaveBeenCalledTimes(1)
         expect(fetch).toHaveBeenCalledWith(
-          'http://mock-backend/document-uploads/upload-abc-123/files/file-xyz-456',
+          'http://mock-backend/document-uploads/upload-abc-123/file',
           {
             method: 'GET',
             headers: { 'x-trace-id': traceId }
@@ -201,14 +200,9 @@ describe('#notificationClient', () => {
         })
 
         await expect(
-          notificationClient.streamFile(
-            'upload-abc-123',
-            'file-xyz-456',
-            traceId
-          )
+          notificationClient.streamFile('upload-abc-123', traceId)
         ).rejects.toMatchObject({
-          message:
-            'Failed to stream file file-xyz-456 from upload upload-abc-123',
+          message: 'Failed to stream file for upload upload-abc-123',
           status: 404,
           statusText: 'Not Found'
         })
