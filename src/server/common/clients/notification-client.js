@@ -99,6 +99,10 @@ export const notificationClient = {
    * Deletes notifications from the backend by reference numbers
    */
   async delete(referenceNumbers, traceId, userId) {
+    if (!userId) {
+      throw new Error('userId is required to delete notifications')
+    }
+
     const response = await fetch(
       `${tradeImportsAnimalsBackendUrl}/notifications`,
       {

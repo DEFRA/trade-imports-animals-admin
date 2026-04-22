@@ -245,8 +245,9 @@ describe('#notificationClient', () => {
           statusText: 'Internal Server Error'
         })
 
+        const userId = 'user-abc-123'
         await expect(
-          notificationClient.delete(['REF-123'], traceId)
+          notificationClient.delete(['REF-123'], traceId, userId)
         ).rejects.toMatchObject({
           message: 'Failed to delete notifications',
           status: 500,
