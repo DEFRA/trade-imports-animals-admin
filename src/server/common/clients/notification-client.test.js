@@ -217,7 +217,8 @@ describe('#notificationClient', () => {
       test('Should send DELETE request to /notifications with reference numbers', async () => {
         fetch.mockResolvedValueOnce({ ok: true })
 
-        await notificationClient.delete(['REF-123', 'REF-456'], traceId)
+        const userId = 'user-abc-123'
+        await notificationClient.delete(['REF-123', 'REF-456'], traceId, userId)
 
         expect(fetch).toHaveBeenCalledTimes(1)
         expect(fetch).toHaveBeenCalledWith(
@@ -227,6 +228,7 @@ describe('#notificationClient', () => {
             headers: {
               'Content-Type': 'application/json',
               'x-trace-id': traceId,
+              'User-Id': userId,
               'Trade-Imports-Animals-Admin-Secret': 'test-admin-secret'
             },
             body: JSON.stringify(['REF-123', 'REF-456'])

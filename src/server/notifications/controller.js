@@ -38,10 +38,16 @@ export const viewNotificationController = {
   }
 }
 
+const UPLOAD_ID_PATTERN = /^[a-zA-Z0-9-]+$/
+
 export const downloadDocumentController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
     const { uploadId } = request.params
+
+    if (!UPLOAD_ID_PATTERN.test(uploadId)) {
+      return h.response({ message: 'Invalid uploadId' }).code(400)
+    }
 
     const backendResponse = await notificationClient.streamFile(
       uploadId,

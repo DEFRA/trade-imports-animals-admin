@@ -27,6 +27,11 @@ describe('#notificationsController', () => {
   beforeAll(async () => {
     server = await createServer()
     await server.initialize()
+    server.app.cache = {
+      get: vi.fn(),
+      set: vi.fn(),
+      drop: vi.fn()
+    }
   })
 
   afterAll(async () => {
@@ -256,6 +261,26 @@ describe('#notificationsController', () => {
       })
 
       expect(statusCode).toBe(statusCodes.internalServerError)
+    })
+
+    test('Should return 400 when uploadId contains path traversal characters', async () => {
+      const { statusCode } = await server.inject({
+        method: 'GET',
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/..%2F..%2Fetc%2Fpasswd'
+      })
+
+      expect(statusCode).toBe(statusCodes.badRequest)
+      expect(notificationClient.streamFile).not.toHaveBeenCalled()
+    })
+
+    test('Should return 400 when uploadId contains invalid characters', async () => {
+      const { statusCode } = await server.inject({
+        method: 'GET',
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload%3Cscript%3E'
+      })
+
+      expect(statusCode).toBe(statusCodes.badRequest)
+      expect(notificationClient.streamFile).not.toHaveBeenCalled()
     })
   })
 

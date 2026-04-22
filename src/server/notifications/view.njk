@@ -44,7 +44,7 @@
           },
           {
             key: { text: "Internal reference" },
-            value: { text: notification.origin.internalReference if notification.origin.internalReference else "—" }
+            value: { text: notification.origin.internalReference if notification.origin and notification.origin.internalReference else "—" }
           }
         ]
       }) }}
