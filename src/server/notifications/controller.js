@@ -81,7 +81,9 @@ export const deleteNotificationsController = {
     if (
       !Array.isArray(referenceNumbers) ||
       referenceNumbers.length === 0 ||
-      !referenceNumbers.every((r) => typeof r === 'string')
+      !referenceNumbers.every(
+        (referenceNumber) => typeof referenceNumber === 'string'
+      )
     ) {
       return h.response({ message: 'Invalid payload' }).code(400)
     }
