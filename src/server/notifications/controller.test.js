@@ -218,7 +218,7 @@ describe('#notificationsController', () => {
     })
   })
 
-  describe('GET /notifications/{ref}/documents/{uploadId}/files/{fileId}', () => {
+  describe('GET /notifications/{ref}/documents/{uploadId}', () => {
     test('Should stream file with correct content headers', async () => {
       const fileContent = 'PDF file content'
       const stream = new ReadableStream({
