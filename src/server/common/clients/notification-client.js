@@ -8,6 +8,14 @@ const tracingHeader = config.get('tracing.header')
 const adminSecret = config.get('tradeImportsAnimalsAdminSecret')
 const logger = createLogger()
 
+const throwFetchError = (message, response) => {
+  const error = new Error(message)
+  error.status = response.status
+  error.statusText = response.statusText
+  logger.error(`${message}: ${response.status}`)
+  throw error
+}
+
 export const notificationClient = {
   /**
    * Retrieves all notification reference numbers from the backend
@@ -25,17 +33,10 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error(
-        'Failed to get all notification reference numbers'
+      throwFetchError(
+        'Failed to get all notification reference numbers',
+        response
       )
-      error.status = response.status
-      error.statusText = response.statusText
-
-      logger.error(
-        `Failed to get all notification reference numbers: ${error.message}`
-      )
-
-      throw error
     }
 
     return response.json()
@@ -57,13 +58,7 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error(`Failed to get notification ${referenceNumber}`)
-      error.status = response.status
-      error.statusText = response.statusText
-      logger.error(
-        `Failed to get notification ${referenceNumber}: ${response.status}`
-      )
-      throw error
+      throwFetchError(`Failed to get notification ${referenceNumber}`, response)
     }
 
     return response.json()
@@ -85,11 +80,7 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error(`Failed to stream file for upload ${uploadId}`)
-      error.status = response.status
-      error.statusText = response.statusText
-      logger.error(`Failed to stream file: ${response.status}`)
-      throw error
+      throwFetchError(`Failed to stream file for upload ${uploadId}`, response)
     }
 
     return response
@@ -118,11 +109,7 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error('Failed to delete notifications')
-      error.status = response.status
-      error.statusText = response.statusText
-      logger.error(`Failed to delete notifications: ${error.message}`)
-      throw error
+      throwFetchError('Failed to delete notifications', response)
     }
   }
 }
