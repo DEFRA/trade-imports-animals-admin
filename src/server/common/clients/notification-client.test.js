@@ -111,7 +111,7 @@ describe('#notificationClient', () => {
   describe('getByRef', () => {
     describe('When getByRef is called successfully', () => {
       test('Should send GET request to /notifications/{ref} and return parsed notification', async () => {
-        const notification = {
+        const notificationFixture = {
           referenceNumber: 'DRAFT.IMP.2026.abc123',
           origin: { countryCode: 'GB' },
           accompanyingDocuments: []
@@ -119,10 +119,10 @@ describe('#notificationClient', () => {
 
         fetch.mockResolvedValueOnce({
           ok: true,
-          json: vi.fn().mockResolvedValue(notification)
+          json: vi.fn().mockResolvedValue(notificationFixture)
         })
 
-        const result = await notificationClient.getByRef(
+        const notification = await notificationClient.getByRef(
           'DRAFT.IMP.2026.abc123',
           traceId
         )
@@ -138,7 +138,7 @@ describe('#notificationClient', () => {
             }
           }
         )
-        expect(result).toEqual(notification)
+        expect(notification).toEqual(notificationFixture)
       })
     })
 
@@ -174,7 +174,7 @@ describe('#notificationClient', () => {
 
         fetch.mockResolvedValueOnce(mockResponse)
 
-        const result = await notificationClient.streamFile(
+        const streamResponse = await notificationClient.streamFile(
           'upload-abc-123',
           traceId
         )
@@ -187,7 +187,7 @@ describe('#notificationClient', () => {
             headers: { 'x-trace-id': traceId }
           }
         )
-        expect(result).toBe(mockResponse)
+        expect(streamResponse).toBe(mockResponse)
       })
     })
 
