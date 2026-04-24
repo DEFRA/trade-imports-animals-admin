@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream'
 import { getTraceId } from '@defra/hapi-tracing'
 import { notificationClient } from '../common/clients/notification-client.js'
+import { statusCodes } from '../common/constants/status-codes.js'
 
 export const notificationsController = {
   async handler(request, h) {
@@ -46,7 +47,9 @@ export const downloadDocumentController = {
     const { uploadId } = request.params
 
     if (!UPLOAD_ID_PATTERN.test(uploadId)) {
-      return h.response({ message: 'Invalid uploadId' }).code(400)
+      return h
+        .response({ message: 'Invalid uploadId' })
+        .code(statusCodes.badRequest)
     }
 
     const backendResponse = await notificationClient.streamFile(
@@ -85,7 +88,9 @@ export const deleteNotificationsController = {
         (referenceNumber) => typeof referenceNumber === 'string'
       )
     ) {
-      return h.response({ message: 'Invalid payload' }).code(400)
+      return h
+        .response({ message: 'Invalid payload' })
+        .code(statusCodes.badRequest)
     }
 
     const traceId = getTraceId() ?? 'test-trace-id'
