@@ -14,6 +14,7 @@
       <h2 class="govuk-heading-m">Notification details</h2>
 
       {{ govukSummaryList({
+        attributes: { 'data-testid': 'summary-notification-details' },
         rows: [
           {
             key: { text: "Reference number" },
@@ -33,6 +34,7 @@
       <h2 class="govuk-heading-m">Origin</h2>
 
       {{ govukSummaryList({
+        attributes: { 'data-testid': 'summary-origin' },
         rows: [
           {
             key: { text: "Country code" },
@@ -52,6 +54,7 @@
       <h2 class="govuk-heading-m">Commodity</h2>
 
       {{ govukSummaryList({
+        attributes: { 'data-testid': 'summary-commodity' },
         rows: [
           {
             key: { text: "Commodity name" },
@@ -72,6 +75,7 @@
         {% for complement in notification.commodity.commodityComplement %}
           <h3 class="govuk-heading-s">Commodity complement {{ loop.index }}</h3>
           {{ govukSummaryList({
+            attributes: { 'data-testid': 'summary-commodity-complement-' + loop.index },
             rows: [
               {
                 key: { text: "Type of commodity" },
@@ -117,6 +121,7 @@
       {% if notification.additionalDetails %}
         <h2 class="govuk-heading-m">Additional details</h2>
         {{ govukSummaryList({
+          attributes: { 'data-testid': 'summary-additional-details' },
           rows: [
             {
               key: { text: "Certified for" },
@@ -134,6 +139,7 @@
 
       {% if notification.accompanyingDocuments and notification.accompanyingDocuments.length %}
         {% for document in notification.accompanyingDocuments %}
+          <div data-testid="document-{{ loop.index }}">
           <h3 class="govuk-heading-s">Document {{ loop.index }}</h3>
 
           {% if document.scanStatus === 'COMPLETE' %}
@@ -165,6 +171,7 @@
           {% endset %}
 
           {{ govukSummaryList({
+            attributes: { 'data-testid': 'summary-document-' + loop.index },
             rows: [
               {
                 key: { text: "Document type" },
@@ -188,6 +195,7 @@
               }
             ]
           }) }}
+          </div>
         {% endfor %}
       {% else %}
         <p class="govuk-body">No accompanying documents uploaded.</p>
