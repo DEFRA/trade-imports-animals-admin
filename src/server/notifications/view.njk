@@ -142,9 +142,9 @@
           <div data-testid="document-{{ loop.index }}">
           <h3 class="govuk-heading-s">Document {{ loop.index }}</h3>
 
-          {% if document.scanStatus === 'COMPLETE' %}
+          {% if document.scanStatus == 'COMPLETE' %}
             {% set scanStatusTag %}{{ govukTag({ text: document.scanStatus | label, classes: "govuk-tag--green" }) }}{% endset %}
-          {% elif document.scanStatus === 'REJECTED' %}
+          {% elif document.scanStatus == 'REJECTED' %}
             {% set scanStatusTag %}{{ govukTag({ text: document.scanStatus | label, classes: "govuk-tag--red" }) }}{% endset %}
           {% else %}
             {% set scanStatusTag %}{{ govukTag({ text: document.scanStatus | label, classes: "govuk-tag--yellow" }) }}{% endset %}
@@ -154,7 +154,7 @@
             {% if document.files and document.files.length %}
               <ul class="govuk-list">
                 {% for file in document.files %}
-                  {% if file.fileStatus === 'complete' and document.scanStatus === 'COMPLETE' %}
+                  {% if file.fileStatus == 'complete' and document.scanStatus == 'COMPLETE' %}
                     <li>
                       <a href="/notifications/{{ notification.referenceNumber }}/documents/{{ document.uploadId }}" class="govuk-link">
                         {{ file.filename }}
