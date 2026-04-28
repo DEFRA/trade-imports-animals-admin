@@ -190,10 +190,12 @@ describe('#notificationClient', () => {
           statusText: 'Not Found'
         })
 
+        const uploadId = 'upload-abc-123'
+
         await expect(
-          notificationClient.streamFile('upload-abc-123', traceId)
+          notificationClient.streamFile(uploadId, traceId)
         ).rejects.toMatchObject({
-          message: 'Failed to stream file for upload upload-abc-123',
+          message: `Failed to stream file for upload ${uploadId}`,
           status: 404,
           statusText: 'Not Found'
         })
