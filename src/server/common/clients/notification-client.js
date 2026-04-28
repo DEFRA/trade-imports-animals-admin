@@ -12,7 +12,7 @@ const throwFetchError = (message, response) => {
   const error = new Error(message)
   error.status = response.status
   error.statusText = response.statusText
-  logger.error(`${message}: ${response.status}`)
+  logger.error(`${message}: ${response.status} ${response.statusText}`)
   throw error
 }
 
