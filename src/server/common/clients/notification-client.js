@@ -47,7 +47,7 @@ export const notificationClient = {
    */
   async getByRef(referenceNumber, traceId) {
     const response = await fetch(
-      `${tradeImportsAnimalsBackendUrl}/notifications/${referenceNumber}`,
+      `${tradeImportsAnimalsBackendUrl}/notifications/${encodeURIComponent(referenceNumber)}`,
       {
         method: 'GET',
         headers: {
