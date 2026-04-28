@@ -166,7 +166,7 @@ describe('#notificationsController', () => {
 
       expect(statusCode).toBe(statusCodes.ok)
       expect(result).toEqual(expect.stringContaining(referenceNumber))
-      expect(result).toEqual(expect.stringContaining('GB'))
+      expect(result).toEqual(expect.stringMatching(/>\s*GB\s*</))
       expect(result).toEqual(expect.stringContaining('ITAHC'))
       expect(result).toEqual(expect.stringContaining('UK/GB/2026/001'))
       expect(result).toEqual(expect.stringContaining('Human consumption'))
@@ -251,7 +251,7 @@ describe('#notificationsController', () => {
         body: stream
       })
 
-      const { statusCode, headers } = await server.inject({
+      const { statusCode, headers, payload } = await server.inject({
         method: 'GET',
         url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123'
       })
@@ -262,6 +262,7 @@ describe('#notificationsController', () => {
         'attachment; filename="health-cert.pdf"'
       )
       expect(headers['x-content-type-options']).toBe('nosniff')
+      expect(payload).toBe(fileContent)
       expect(notificationClient.streamFile).toHaveBeenCalledWith(
         'upload-abc-123',
         expect.any(String)
