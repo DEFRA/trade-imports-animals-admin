@@ -27,6 +27,7 @@ describe('#notificationsController', () => {
   beforeAll(async () => {
     server = await createServer()
     await server.initialize()
+    // stub required by deleteNotificationsController auth cache look-up
     server.app.cache = {
       get: vi.fn(),
       set: vi.fn(),
