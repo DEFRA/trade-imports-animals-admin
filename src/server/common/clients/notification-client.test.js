@@ -3,19 +3,12 @@ import { vi } from 'vitest'
 import { notificationClient } from './notification-client.js'
 
 const mockLoggerError = vi.fn()
-const mockGetSessionValue = vi.fn()
-const mockSetSessionValue = vi.fn()
 
 vi.mock('../helpers/logging/logger.js', () => ({
   createLogger: () => ({
     info: vi.fn(),
     error: (...args) => mockLoggerError(...args)
   })
-}))
-
-vi.mock('../helpers/session-helpers.js', () => ({
-  getSessionValue: (...args) => mockGetSessionValue(...args),
-  setSessionValue: (...args) => mockSetSessionValue(...args)
 }))
 
 vi.mock('../../../config/config.js', () => ({
@@ -46,8 +39,6 @@ describe('#notificationClient', () => {
   beforeEach(() => {
     originalFetch = global.fetch
     global.fetch = vi.fn()
-    mockGetSessionValue.mockClear()
-    mockSetSessionValue.mockClear()
     mockLoggerError.mockClear()
   })
 
