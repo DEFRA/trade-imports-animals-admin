@@ -352,6 +352,30 @@ describe('#notificationsController', () => {
       expect(headers['x-content-type-options']).toBe('nosniff')
     })
 
+    test('Should fall back to application/octet-stream and attachment when backend returns no content-type or content-disposition', async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('file content'))
+          controller.close()
+        }
+      })
+
+      notificationClient.streamFile.mockResolvedValue({
+        headers: new Headers(),
+        body: stream
+      })
+
+      const { statusCode, headers } = await server.inject({
+        method: 'GET',
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123'
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(headers['content-type']).toContain('application/octet-stream')
+      expect(headers['content-disposition']).toBe('attachment')
+      expect(headers['x-content-type-options']).toBe('nosniff')
+    })
+
     test('Should return 500 when notificationClient.streamFile throws', async () => {
       notificationClient.streamFile.mockRejectedValue(new Error('S3 error'))
 
