@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream'
 import Boom from '@hapi/boom'
+import Joi from 'joi'
 import { getTraceId } from '@defra/hapi-tracing'
 import { notificationClient } from '../common/clients/notification-client.js'
 import { statusCodes } from '../common/constants/status-codes.js'
@@ -49,8 +50,6 @@ export const viewNotificationController = {
   }
 }
 
-const UPLOAD_ID_PATTERN = /^[a-zA-Z0-9-]+$/
-
 const ALLOWED_CONTENT_TYPES = new Set([
   'application/pdf',
   'image/jpeg',
@@ -61,15 +60,17 @@ const ALLOWED_CONTENT_TYPES = new Set([
 ])
 
 export const downloadDocumentController = {
+  options: {
+    validate: {
+      params: Joi.object({
+        ref: Joi.string(),
+        uploadId: Joi.string().pattern(/^[a-zA-Z0-9-]+$/)
+      })
+    }
+  },
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
     const { uploadId } = request.params
-
-    if (!UPLOAD_ID_PATTERN.test(uploadId)) {
-      return h
-        .response({ message: 'Invalid uploadId' })
-        .code(statusCodes.badRequest)
-    }
 
     const backendResponse = await notificationClient.streamFile(
       uploadId,
