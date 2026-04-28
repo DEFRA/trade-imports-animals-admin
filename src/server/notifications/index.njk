@@ -72,7 +72,7 @@
             {% for referenceNumber in referenceNumbers %}
               <tr class="govuk-table__row">
                 <td class="govuk-table__cell">
-                  <a href="/notifications/{{ referenceNumber }}" class="govuk-link">{{ referenceNumber }}</a>
+                  <a href="/notifications/{{ referenceNumber }}" class="govuk-link" aria-label="View notification {{ referenceNumber }}">{{ referenceNumber }}</a>
                 </td>
                 <td class="govuk-table__cell">
                   <input type="checkbox" class="notification-checkbox" value="{{ referenceNumber }}" aria-label="Select notification {{ referenceNumber }}">
