@@ -71,7 +71,7 @@
         ]
       }) }}
 
-      {% if notification.commodity.commodityComplement and notification.commodity.commodityComplement.length %}
+      {% if notification.commodity and notification.commodity.commodityComplement and notification.commodity.commodityComplement.length %}
         {% for complement in notification.commodity.commodityComplement %}
           <h3 class="govuk-heading-s">Commodity complement {{ loop.index }}</h3>
           {{ govukSummaryList({
