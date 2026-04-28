@@ -1,6 +1,7 @@
 import assign from 'lodash/assign.js'
 
-import { formatDate } from './format-date.js'
 import { formatCurrency } from './format-currency.js'
+import { formatDate } from './format-date.js'
+import { label } from './label.js'
 
-export { assign, formatDate, formatCurrency }
+export { assign, formatCurrency, formatDate, label }

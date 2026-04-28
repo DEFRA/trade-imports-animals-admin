@@ -169,7 +169,7 @@ describe('#notificationsController', () => {
       expect(result).toEqual(expect.stringContaining('GB'))
       expect(result).toEqual(expect.stringContaining('ITAHC'))
       expect(result).toEqual(expect.stringContaining('UK/GB/2026/001'))
-      expect(result).toEqual(expect.stringContaining('HUMAN_CONSUMPTION'))
+      expect(result).toEqual(expect.stringContaining('Human consumption'))
     })
 
     test('Should render a download link for completed scanned files', async () => {

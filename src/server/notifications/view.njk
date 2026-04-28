@@ -62,7 +62,7 @@
           },
           {
             key: { text: "Reason for import" },
-            value: { text: notification.reasonForImport if notification.reasonForImport else "—" }
+            value: { text: notification.reasonForImport | label if notification.reasonForImport else "—" }
           },
           {
             key: { text: "CPH number" },
@@ -125,11 +125,11 @@
           rows: [
             {
               key: { text: "Certified for" },
-              value: { text: notification.additionalDetails.certifiedFor if notification.additionalDetails.certifiedFor else "—" }
+              value: { text: notification.additionalDetails.certifiedFor | label if notification.additionalDetails.certifiedFor else "—" }
             },
             {
               key: { text: "Unweaned animals" },
-              value: { text: notification.additionalDetails.unweanedAnimals if notification.additionalDetails.unweanedAnimals else "—" }
+              value: { text: notification.additionalDetails.unweanedAnimals | label if notification.additionalDetails.unweanedAnimals else "—" }
             }
           ]
         }) }}
@@ -143,11 +143,11 @@
           <h3 class="govuk-heading-s">Document {{ loop.index }}</h3>
 
           {% if document.scanStatus === 'COMPLETE' %}
-            {% set scanStatusTag %}{{ govukTag({ text: "Safe", classes: "govuk-tag--green" }) }}{% endset %}
+            {% set scanStatusTag %}{{ govukTag({ text: document.scanStatus | label, classes: "govuk-tag--green" }) }}{% endset %}
           {% elif document.scanStatus === 'REJECTED' %}
-            {% set scanStatusTag %}{{ govukTag({ text: "Virus found", classes: "govuk-tag--red" }) }}{% endset %}
+            {% set scanStatusTag %}{{ govukTag({ text: document.scanStatus | label, classes: "govuk-tag--red" }) }}{% endset %}
           {% else %}
-            {% set scanStatusTag %}{{ govukTag({ text: "Pending", classes: "govuk-tag--yellow" }) }}{% endset %}
+            {% set scanStatusTag %}{{ govukTag({ text: document.scanStatus | label, classes: "govuk-tag--yellow" }) }}{% endset %}
           {% endif %}
 
           {% set fileLinksHtml %}
