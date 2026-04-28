@@ -160,6 +160,10 @@
                         {{ file.filename }}
                       </a>
                     </li>
+                  {% elif document.scanStatus == 'PENDING' %}
+                    <li>{{ file.filename }} (scanning...)</li>
+                  {% elif document.scanStatus == 'REJECTED' %}
+                    <li>{{ file.filename }} (rejected — virus found)</li>
                   {% else %}
                     <li>{{ file.filename }} (not available)</li>
                   {% endif %}
