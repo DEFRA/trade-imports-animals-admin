@@ -237,6 +237,14 @@ describe('#notificationClient', () => {
       })
     })
 
+    describe('When userId is not provided', () => {
+      test('Should reject with userId is required error', async () => {
+        await expect(notificationClient.delete([], traceId)).rejects.toThrow(
+          'userId is required to delete notifications'
+        )
+      })
+    })
+
     describe('When delete request fails', () => {
       test('Should throw an error when delete request fails', async () => {
         fetch.mockResolvedValueOnce({
