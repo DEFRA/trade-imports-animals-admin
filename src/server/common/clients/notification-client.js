@@ -69,6 +69,10 @@ export const notificationClient = {
    * Returns the raw fetch Response so the caller can pipe headers and body.
    */
   async streamFile(uploadId, traceId) {
+    if (!/^[a-zA-Z0-9-]+$/.test(uploadId)) {
+      throw new Error(`Invalid uploadId: ${uploadId}`)
+    }
+
     const response = await fetch(
       `${tradeImportsAnimalsBackendUrl}/document-uploads/${uploadId}/file`,
       {
