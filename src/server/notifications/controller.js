@@ -23,6 +23,16 @@ export const notificationsController = {
 }
 
 export const viewNotificationController = {
+  options: {
+    validate: {
+      params: Joi.object({
+        ref: Joi.string()
+          .pattern(/^[a-zA-Z0-9.-]+$/)
+          .min(1)
+          .max(50)
+      })
+    }
+  },
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
     const { ref } = request.params
