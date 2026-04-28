@@ -206,8 +206,23 @@ describe('#notificationsController', () => {
       )
     })
 
-    test('Should return 500 when notificationClient.getByRef throws', async () => {
-      notificationClient.getByRef.mockRejectedValue(new Error('Backend error'))
+    test('Should return 404 when notificationClient.getByRef throws a 404 error', async () => {
+      const notFoundError = new Error('Not found')
+      notFoundError.status = 404
+      notificationClient.getByRef.mockRejectedValue(notFoundError)
+
+      const { statusCode } = await server.inject({
+        method: 'GET',
+        url: `/notifications/${referenceNumber}`
+      })
+
+      expect(statusCode).toBe(statusCodes.notFound)
+    })
+
+    test('Should return 500 when notificationClient.getByRef throws a non-404 error', async () => {
+      const serverError = new Error('Backend error')
+      serverError.status = 503
+      notificationClient.getByRef.mockRejectedValue(serverError)
 
       const { statusCode } = await server.inject({
         method: 'GET',

@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream'
+import Boom from '@hapi/boom'
 import { getTraceId } from '@defra/hapi-tracing'
 import { notificationClient } from '../common/clients/notification-client.js'
 import { statusCodes } from '../common/constants/status-codes.js'
@@ -24,7 +25,16 @@ export const viewNotificationController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
     const { ref } = request.params
-    const notification = await notificationClient.getByRef(ref, traceId)
+
+    let notification
+    try {
+      notification = await notificationClient.getByRef(ref, traceId)
+    } catch (err) {
+      if (err.status === statusCodes.notFound) {
+        throw Boom.notFound(`Notification ${ref} not found`)
+      }
+      throw err
+    }
 
     return h.view('notifications/view', {
       pageTitle: `Notification ${notification.referenceNumber}`,
