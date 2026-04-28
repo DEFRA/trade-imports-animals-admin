@@ -41,6 +41,15 @@ export const viewNotificationController = {
 
 const UPLOAD_ID_PATTERN = /^[a-zA-Z0-9-]+$/
 
+const ALLOWED_CONTENT_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'application/vnd.ms-excel',
+  'application/msword',
+  'application/octet-stream'
+])
+
 export const downloadDocumentController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
@@ -57,8 +66,13 @@ export const downloadDocumentController = {
       traceId
     )
 
-    const contentType =
+    const rawContentType =
       backendResponse.headers.get('content-type') ?? 'application/octet-stream'
+    const mimeType = rawContentType.split(';')[0].trim().toLowerCase()
+    const contentType = ALLOWED_CONTENT_TYPES.has(mimeType)
+      ? mimeType
+      : 'application/octet-stream'
+
     const contentDisposition =
       backendResponse.headers.get('content-disposition') ?? 'attachment'
 
@@ -68,6 +82,7 @@ export const downloadDocumentController = {
       .response(nodeStream)
       .header('Content-Type', contentType)
       .header('Content-Disposition', contentDisposition)
+      .header('X-Content-Type-Options', 'nosniff')
   }
 }
 

@@ -246,10 +246,94 @@ describe('#notificationsController', () => {
       expect(headers['content-disposition']).toBe(
         'attachment; filename="health-cert.pdf"'
       )
+      expect(headers['x-content-type-options']).toBe('nosniff')
       expect(notificationClient.streamFile).toHaveBeenCalledWith(
         'upload-abc-123',
         expect.any(String)
       )
+    })
+
+    test('Should allow all permitted MIME types', async () => {
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'application/vnd.ms-excel',
+        'application/msword',
+        'application/octet-stream'
+      ]
+
+      for (const mimeType of allowedTypes) {
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode('file content'))
+            controller.close()
+          }
+        })
+
+        notificationClient.streamFile.mockResolvedValue({
+          headers: new Headers({ 'content-type': mimeType }),
+          body: stream
+        })
+
+        const { statusCode, headers } = await server.inject({
+          method: 'GET',
+          url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123'
+        })
+
+        expect(statusCode).toBe(statusCodes.ok)
+        expect(headers['content-type']).toContain(mimeType)
+        expect(headers['x-content-type-options']).toBe('nosniff')
+      }
+    })
+
+    test('Should fall back to application/octet-stream for disallowed MIME types', async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            new TextEncoder().encode('<script>alert(1)</script>')
+          )
+          controller.close()
+        }
+      })
+
+      notificationClient.streamFile.mockResolvedValue({
+        headers: new Headers({ 'content-type': 'text/html' }),
+        body: stream
+      })
+
+      const { statusCode, headers } = await server.inject({
+        method: 'GET',
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123'
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(headers['content-type']).toContain('application/octet-stream')
+      expect(headers['x-content-type-options']).toBe('nosniff')
+    })
+
+    test('Should strip MIME type parameters before allow-list check', async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('PDF content'))
+          controller.close()
+        }
+      })
+
+      notificationClient.streamFile.mockResolvedValue({
+        headers: new Headers({
+          'content-type': 'application/pdf; charset=utf-8'
+        }),
+        body: stream
+      })
+
+      const { statusCode, headers } = await server.inject({
+        method: 'GET',
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123'
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(headers['content-type']).toContain('application/pdf')
+      expect(headers['x-content-type-options']).toBe('nosniff')
     })
 
     test('Should return 500 when notificationClient.streamFile throws', async () => {
