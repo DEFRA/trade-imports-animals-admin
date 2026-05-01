@@ -73,7 +73,10 @@ export const downloadDocumentController = {
   options: {
     validate: {
       params: Joi.object({
-        ref: Joi.string(),
+        ref: Joi.string()
+          .pattern(/^[a-zA-Z0-9.-]+$/)
+          .min(1)
+          .max(50),
         uploadId: Joi.string().pattern(/^[a-zA-Z0-9-]+$/)
       })
     }
