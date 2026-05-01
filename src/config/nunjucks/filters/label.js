@@ -1,7 +1,7 @@
 // Keys are case-sensitive — 'complete' (fileStatus) and 'COMPLETE' (scanStatus) map to different labels.
 // PENDING is included explicitly so all known scanStatus values are documented here,
 // even though the generic transform would produce the same result.
-const LABEL_OVERRIDES = {
+const LABEL_OVERRIDES = Object.freeze({
   // reasonForImport
   reEntry: 'Re-entry',
 
@@ -16,7 +16,7 @@ const LABEL_OVERRIDES = {
 
   // certifiedFor — generic produces "Breeding and or production" without the slash
   breedingAndOrProduction: 'Breeding and/or production'
-}
+})
 
 function sentenceCase(str) {
   if (!str) return ''
