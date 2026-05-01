@@ -69,6 +69,12 @@ describe('#label', () => {
     })
   })
 
+  describe('Numeric coercion', () => {
+    test('0 → "0" (String() coercion)', () => {
+      expect(label(0)).toBe('0')
+    })
+  })
+
   describe('Null/undefined safety', () => {
     test('null → empty string', () => {
       expect(label(null)).toBe('')
