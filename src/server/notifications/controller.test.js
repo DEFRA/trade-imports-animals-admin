@@ -270,37 +270,33 @@ describe('#notificationsController', () => {
       )
     })
 
-    test('Should allow all permitted MIME types', async () => {
-      const allowedTypes = [
-        'image/jpeg',
-        'image/png',
-        'application/vnd.ms-excel',
-        'application/msword',
-        'application/octet-stream'
-      ]
+    test.each([
+      'image/jpeg',
+      'image/png',
+      'application/vnd.ms-excel',
+      'application/msword',
+      'application/octet-stream'
+    ])('Should serve %s without downgrade', async (mimeType) => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('file content'))
+          controller.close()
+        }
+      })
 
-      for (const mimeType of allowedTypes) {
-        const stream = new ReadableStream({
-          start(controller) {
-            controller.enqueue(new TextEncoder().encode('file content'))
-            controller.close()
-          }
-        })
+      notificationClient.streamFile.mockResolvedValue({
+        headers: new Headers({ 'content-type': mimeType }),
+        body: stream
+      })
 
-        notificationClient.streamFile.mockResolvedValue({
-          headers: new Headers({ 'content-type': mimeType }),
-          body: stream
-        })
+      const { statusCode, headers } = await server.inject({
+        method: 'GET',
+        url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123'
+      })
 
-        const { statusCode, headers } = await server.inject({
-          method: 'GET',
-          url: '/notifications/DRAFT.IMP.2026.abc123/documents/upload-abc-123'
-        })
-
-        expect(statusCode).toBe(statusCodes.ok)
-        expect(headers['content-type']).toContain(mimeType)
-        expect(headers['x-content-type-options']).toBe('nosniff')
-      }
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(headers['content-type']).toContain(mimeType)
+      expect(headers['x-content-type-options']).toBe('nosniff')
     })
 
     test('Should fall back to application/octet-stream for disallowed MIME types', async () => {
