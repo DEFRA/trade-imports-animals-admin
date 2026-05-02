@@ -8,6 +8,8 @@ const tracingHeader = config.get('tracing.header')
 const adminSecret = config.get('tradeImportsAnimalsAdminSecret')
 const logger = createLogger()
 
+const UPLOAD_ID_PATTERN = /^[a-zA-Z0-9-]+$/
+
 const throwFetchError = (message, response) => {
   const error = new Error(message)
   error.status = response.status
@@ -69,7 +71,7 @@ export const notificationClient = {
    * Returns the raw fetch Response so the caller can pipe headers and body.
    */
   async streamFile(uploadId, traceId) {
-    if (!/^[a-zA-Z0-9-]+$/.test(uploadId)) {
+    if (!UPLOAD_ID_PATTERN.test(uploadId)) {
       throw new Error(`Invalid uploadId: ${uploadId}`)
     }
 
