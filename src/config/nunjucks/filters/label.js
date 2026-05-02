@@ -18,9 +18,9 @@ const LABEL_OVERRIDES = Object.freeze({
   breedingAndOrProduction: 'Breeding and/or production'
 })
 
-const sentenceCase = (str) => {
-  if (!str) return ''
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+const sentenceCase = (text) => {
+  if (!text) return ''
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
 }
 
 const genericTransform = (value) =>
@@ -30,9 +30,9 @@ const genericTransform = (value) =>
 
 export const label = (value) => {
   if (value === null || value === undefined || value === '') return ''
-  const str = String(value)
-  if (Object.prototype.hasOwnProperty.call(LABEL_OVERRIDES, str)) {
-    return LABEL_OVERRIDES[str]
+  const key = String(value)
+  if (Object.prototype.hasOwnProperty.call(LABEL_OVERRIDES, key)) {
+    return LABEL_OVERRIDES[key]
   }
-  return genericTransform(str)
+  return genericTransform(key)
 }
