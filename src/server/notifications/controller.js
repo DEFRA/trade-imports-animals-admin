@@ -72,6 +72,12 @@ const ALLOWED_CONTENT_TYPES = new Set([
   DEFAULT_CONTENT_TYPE
 ])
 
+const resolveContentType = (headers) => {
+  const rawContentType = headers.get('content-type') ?? DEFAULT_CONTENT_TYPE
+  const mimeType = rawContentType.split(';')[0].trim().toLowerCase()
+  return ALLOWED_CONTENT_TYPES.has(mimeType) ? mimeType : DEFAULT_CONTENT_TYPE
+}
+
 export const downloadDocumentController = {
   options: {
     validate: {
@@ -93,13 +99,7 @@ export const downloadDocumentController = {
       traceId
     )
 
-    const rawContentType =
-      backendResponse.headers.get('content-type') ?? DEFAULT_CONTENT_TYPE
-    const mimeType = rawContentType.split(';')[0].trim().toLowerCase()
-    const contentType = ALLOWED_CONTENT_TYPES.has(mimeType)
-      ? mimeType
-      : DEFAULT_CONTENT_TYPE
-
+    const contentType = resolveContentType(backendResponse.headers)
     const contentDisposition =
       backendResponse.headers.get('content-disposition') ??
       DEFAULT_CONTENT_DISPOSITION
