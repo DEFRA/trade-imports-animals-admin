@@ -23,12 +23,10 @@ const sentenceCase = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
-const genericTransform = (value) => {
-  if (/^[A-Z][A-Z0-9_]*$/.test(value)) {
-    return sentenceCase(value.split('_').join(' '))
-  }
-  return sentenceCase(value.split(/(?=[A-Z])/).join(' '))
-}
+const genericTransform = (value) =>
+  /^[A-Z][A-Z0-9_]*$/.test(value)
+    ? sentenceCase(value.split('_').join(' '))
+    : sentenceCase(value.split(/(?=[A-Z])/).join(' '))
 
 export const label = (value) => {
   if (value === null || value === undefined || value === '') return ''
