@@ -139,6 +139,6 @@ export const deleteNotificationsController = {
 
     const userId = authData?.crn ?? 'test-user-id'
     await notificationClient.delete(referenceNumbers, traceId, userId)
-    return h.response().code(204)
+    return h.response().code(statusCodes.noContent)
   }
 }
