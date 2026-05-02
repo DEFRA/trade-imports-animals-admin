@@ -60,13 +60,16 @@ export const viewNotificationController = {
   }
 }
 
+const DEFAULT_CONTENT_TYPE = 'application/octet-stream'
+const DEFAULT_CONTENT_DISPOSITION = 'attachment'
+
 const ALLOWED_CONTENT_TYPES = new Set([
   'application/pdf',
   'image/jpeg',
   'image/png',
   'application/vnd.ms-excel',
   'application/msword',
-  'application/octet-stream'
+  DEFAULT_CONTENT_TYPE
 ])
 
 export const downloadDocumentController = {
@@ -91,14 +94,15 @@ export const downloadDocumentController = {
     )
 
     const rawContentType =
-      backendResponse.headers.get('content-type') ?? 'application/octet-stream'
+      backendResponse.headers.get('content-type') ?? DEFAULT_CONTENT_TYPE
     const mimeType = rawContentType.split(';')[0].trim().toLowerCase()
     const contentType = ALLOWED_CONTENT_TYPES.has(mimeType)
       ? mimeType
-      : 'application/octet-stream'
+      : DEFAULT_CONTENT_TYPE
 
     const contentDisposition =
-      backendResponse.headers.get('content-disposition') ?? 'attachment'
+      backendResponse.headers.get('content-disposition') ??
+      DEFAULT_CONTENT_DISPOSITION
 
     const nodeStream = Readable.fromWeb(backendResponse.body)
 
