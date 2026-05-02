@@ -18,19 +18,19 @@ const LABEL_OVERRIDES = Object.freeze({
   breedingAndOrProduction: 'Breeding and/or production'
 })
 
-function sentenceCase(str) {
+const sentenceCase = (str) => {
   if (!str) return ''
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
-function genericTransform(value) {
+const genericTransform = (value) => {
   if (/^[A-Z][A-Z0-9_]*$/.test(value)) {
     return sentenceCase(value.split('_').join(' '))
   }
   return sentenceCase(value.split(/(?=[A-Z])/).join(' '))
 }
 
-export function label(value) {
+export const label = (value) => {
   if (value === null || value === undefined || value === '') return ''
   const str = String(value)
   if (Object.prototype.hasOwnProperty.call(LABEL_OVERRIDES, str)) {
