@@ -5,6 +5,12 @@ import { getTraceId } from '@defra/hapi-tracing'
 import { notificationClient } from '../common/clients/notification-client.js'
 import { statusCodes } from '../common/constants/status-codes.js'
 
+const REF_MAX_LENGTH = 50
+const refParamSchema = Joi.string()
+  .pattern(/^[a-zA-Z0-9.-]+$/)
+  .min(1)
+  .max(REF_MAX_LENGTH)
+
 export const notificationsController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
@@ -26,10 +32,7 @@ export const viewNotificationController = {
   options: {
     validate: {
       params: Joi.object({
-        ref: Joi.string()
-          .pattern(/^[a-zA-Z0-9.-]+$/)
-          .min(1)
-          .max(50)
+        ref: refParamSchema
       })
     }
   },
@@ -82,10 +85,7 @@ export const downloadDocumentController = {
   options: {
     validate: {
       params: Joi.object({
-        ref: Joi.string()
-          .pattern(/^[a-zA-Z0-9.-]+$/)
-          .min(1)
-          .max(50),
+        ref: refParamSchema,
         uploadId: Joi.string().pattern(/^[a-zA-Z0-9-]+$/)
       })
     }
