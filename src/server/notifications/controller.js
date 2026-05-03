@@ -1,116 +1,18 @@
-import { Readable } from 'node:stream'
-import Boom from '@hapi/boom'
-import Joi from 'joi'
 import { getTraceId } from '@defra/hapi-tracing'
 import { notificationClient } from '../common/clients/notification-client.js'
 import { statusCodes } from '../common/constants/status-codes.js'
 
-const REF_MAX_LENGTH = 50
-const refParamSchema = Joi.string()
-  .pattern(/^[a-zA-Z0-9.-]+$/)
-  .min(1)
-  .max(REF_MAX_LENGTH)
-
 export const notificationsController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
-    const referenceNumbers = await notificationClient.getAllReferenceNumbers(
-      request,
-      traceId
-    )
+    const notifications = await notificationClient.getAll(request, traceId)
 
     return h.view('notifications/index', {
       pageTitle: 'Notifications',
       heading: 'Notifications',
       breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Notifications' }],
-      referenceNumbers
+      notifications
     })
-  }
-}
-
-export const viewNotificationController = {
-  options: {
-    validate: {
-      params: Joi.object({
-        ref: refParamSchema
-      })
-    }
-  },
-  async handler(request, h) {
-    const traceId = getTraceId() ?? ''
-    const { ref } = request.params
-
-    let notification
-    try {
-      notification = await notificationClient.getByRef(ref, traceId)
-    } catch (err) {
-      if (err.status === statusCodes.notFound) {
-        throw Boom.notFound(`Notification ${ref} not found`)
-      }
-      throw err
-    }
-
-    return h.view('notifications/view', {
-      pageTitle: `Notification ${notification.referenceNumber}`,
-      heading: notification.referenceNumber,
-      breadcrumbs: [
-        { text: 'Home', href: '/' },
-        { text: 'Notifications', href: '/notifications' },
-        { text: notification.referenceNumber }
-      ],
-      notification
-    })
-  }
-}
-
-const DEFAULT_CONTENT_TYPE = 'application/octet-stream'
-const DEFAULT_CONTENT_DISPOSITION = 'attachment'
-
-const ALLOWED_CONTENT_TYPES = new Set([
-  'application/pdf',
-  'image/jpeg',
-  'image/png',
-  'application/vnd.ms-excel',
-  'application/msword',
-  DEFAULT_CONTENT_TYPE
-])
-
-const resolveContentType = (headers) => {
-  const rawContentType = headers.get('content-type') ?? DEFAULT_CONTENT_TYPE
-  const mimeType = rawContentType.split(';')[0].trim().toLowerCase()
-  return ALLOWED_CONTENT_TYPES.has(mimeType) ? mimeType : DEFAULT_CONTENT_TYPE
-}
-
-export const downloadDocumentController = {
-  options: {
-    validate: {
-      params: Joi.object({
-        ref: refParamSchema,
-        uploadId: Joi.string().pattern(/^[a-zA-Z0-9-]+$/)
-      })
-    }
-  },
-  async handler(request, h) {
-    const traceId = getTraceId() ?? ''
-    const { uploadId } = request.params
-
-    const backendResponse = await notificationClient.streamFile(
-      uploadId,
-      traceId
-    )
-
-    const contentType = resolveContentType(backendResponse.headers)
-    const contentDisposition =
-      backendResponse.headers.get('content-disposition') ??
-      DEFAULT_CONTENT_DISPOSITION
-
-    const nodeStream = Readable.fromWeb(backendResponse.body)
-
-    return h
-      .response(nodeStream)
-      .header('Content-Type', contentType)
-      .header('Content-Disposition', contentDisposition)
-      .header('X-Content-Type-Options', 'nosniff')
   }
 }
 
