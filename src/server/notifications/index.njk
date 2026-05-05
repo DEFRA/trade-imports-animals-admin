@@ -58,7 +58,7 @@
         </div>
       </div>
 
-      {% if referenceNumbers.length %}
+      {% if notifications.length %}
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
@@ -69,11 +69,11 @@
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for referenceNumber in referenceNumbers %}
+            {% for n in notifications %}
               <tr class="govuk-table__row">
-                <td class="govuk-table__cell">{{ referenceNumber }}</td>
+                <td class="govuk-table__cell">{{ n.referenceNumber }}</td>
                 <td class="govuk-table__cell">
-                  <input type="checkbox" class="notification-checkbox" value="{{ referenceNumber }}" aria-label="Select notification {{ referenceNumber }}">
+                  <input type="checkbox" class="notification-checkbox" value="{{ n.referenceNumber }}" aria-label="Select notification {{ n.referenceNumber }}">
                 </td>
               </tr>
             {% endfor %}
@@ -100,7 +100,7 @@
         </h2>
         <ul class="govuk-list govuk-list--bullet" id="dialog-reference-list"></ul>
         {{ govukButton({ text: "Confirm", attributes: { id: "confirm-delete-btn" } }) }}
-        {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", attributes: { id: "cancel-delete-btn" } }) }}
+        {{ govukButton({ text: "Cancel", classes: "govuk-button--secondary", attributes: { id: "cancel-delete-btn", autofocus: "true" } }) }}
       </dialog>
 
     </div>
