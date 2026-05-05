@@ -3,19 +3,12 @@ import { vi } from 'vitest'
 import { notificationClient } from './notification-client.js'
 
 const mockLoggerError = vi.fn()
-const mockGetSessionValue = vi.fn()
-const mockSetSessionValue = vi.fn()
 
 vi.mock('../helpers/logging/logger.js', () => ({
   createLogger: () => ({
     info: vi.fn(),
     error: (...args) => mockLoggerError(...args)
   })
-}))
-
-vi.mock('../helpers/session-helpers.js', () => ({
-  getSessionValue: (...args) => mockGetSessionValue(...args),
-  setSessionValue: (...args) => mockSetSessionValue(...args)
 }))
 
 vi.mock('../../../config/config.js', () => ({
@@ -46,8 +39,6 @@ describe('#notificationClient', () => {
   beforeEach(() => {
     originalFetch = global.fetch
     global.fetch = vi.fn()
-    mockGetSessionValue.mockClear()
-    mockSetSessionValue.mockClear()
     mockLoggerError.mockClear()
   })
 
@@ -56,24 +47,24 @@ describe('#notificationClient', () => {
     vi.restoreAllMocks()
   })
 
-  describe('getAllReferenceNumbers', () => {
-    describe('When getAllReferenceNumbers is called successfully', () => {
-      test('Should send GET request to /notifications/reference-numbers and return reference number strings', async () => {
-        const responseBody = ['REF-123', 'REF-456']
+  describe('getAll', () => {
+    describe('When getAll is called successfully', () => {
+      test('Should send GET request to /notifications and return parsed response', async () => {
+        const responseBody = [
+          { referenceNumber: 'REF-123' },
+          { referenceNumber: 'REF-456' }
+        ]
 
         fetch.mockResolvedValueOnce({
           ok: true,
           json: vi.fn().mockResolvedValue(responseBody)
         })
 
-        const result = await notificationClient.getAllReferenceNumbers(
-          mockRequest,
-          traceId
-        )
+        const result = await notificationClient.getAll(mockRequest, traceId)
 
         expect(fetch).toHaveBeenCalledTimes(1)
         expect(fetch).toHaveBeenCalledWith(
-          'http://mock-backend/notifications/reference-numbers',
+          'http://mock-backend/notifications',
           {
             method: 'GET',
             headers: {
@@ -87,8 +78,8 @@ describe('#notificationClient', () => {
       })
     })
 
-    describe('When getAllReferenceNumbers request fails', () => {
-      test('Should throw an error when getAllReferenceNumbers request fails', async () => {
+    describe('When getAll request fails', () => {
+      test('Should throw an error when getAll request fails', async () => {
         fetch.mockResolvedValueOnce({
           ok: false,
           status: 500,
@@ -96,9 +87,9 @@ describe('#notificationClient', () => {
         })
 
         await expect(
-          notificationClient.getAllReferenceNumbers(mockRequest, traceId)
+          notificationClient.getAll(mockRequest, traceId)
         ).rejects.toMatchObject({
-          message: 'Failed to get all notification reference numbers',
+          message: 'Failed to get all notifications',
           status: 500,
           statusText: 'Internal Server Error'
         })
@@ -113,7 +104,8 @@ describe('#notificationClient', () => {
       test('Should send DELETE request to /notifications with reference numbers', async () => {
         fetch.mockResolvedValueOnce({ ok: true })
 
-        await notificationClient.delete(['REF-123', 'REF-456'], traceId)
+        const userId = 'user-abc-123'
+        await notificationClient.delete(['REF-123', 'REF-456'], traceId, userId)
 
         expect(fetch).toHaveBeenCalledTimes(1)
         expect(fetch).toHaveBeenCalledWith(
@@ -123,10 +115,19 @@ describe('#notificationClient', () => {
             headers: {
               'Content-Type': 'application/json',
               'x-trace-id': traceId,
+              'User-Id': userId,
               'Trade-Imports-Animals-Admin-Secret': 'test-admin-secret'
             },
             body: JSON.stringify(['REF-123', 'REF-456'])
           }
+        )
+      })
+    })
+
+    describe('When userId is not provided', () => {
+      test('Should reject with userId is required error', async () => {
+        await expect(notificationClient.delete([], traceId)).rejects.toThrow(
+          'userId is required to delete notifications'
         )
       })
     })
@@ -139,8 +140,9 @@ describe('#notificationClient', () => {
           statusText: 'Internal Server Error'
         })
 
+        const userId = 'user-abc-123'
         await expect(
-          notificationClient.delete(['REF-123'], traceId)
+          notificationClient.delete(['REF-123'], traceId, userId)
         ).rejects.toMatchObject({
           message: 'Failed to delete notifications',
           status: 500,

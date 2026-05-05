@@ -8,13 +8,21 @@ const tracingHeader = config.get('tracing.header')
 const adminSecret = config.get('tradeImportsAnimalsAdminSecret')
 const logger = createLogger()
 
+const throwFetchError = (message, response) => {
+  const error = new Error(message)
+  error.status = response.status
+  error.statusText = response.statusText
+  logger.error(`${message}: ${response.status} ${response.statusText}`)
+  throw error
+}
+
 export const notificationClient = {
   /**
-   * Retrieves all notification reference numbers from the backend
+   * Retrieves all notifications from the backend
    */
-  async getAllReferenceNumbers(_request, traceId) {
+  async getAll(_request, traceId) {
     const response = await fetch(
-      `${tradeImportsAnimalsBackendUrl}/notifications/reference-numbers`,
+      `${tradeImportsAnimalsBackendUrl}/notifications`,
       {
         method: 'GET',
         headers: {
@@ -25,17 +33,7 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error(
-        'Failed to get all notification reference numbers'
-      )
-      error.status = response.status
-      error.statusText = response.statusText
-
-      logger.error(
-        `Failed to get all notification reference numbers: ${error.message}`
-      )
-
-      throw error
+      throwFetchError('Failed to get all notifications', response)
     }
 
     return response.json()
@@ -45,6 +43,10 @@ export const notificationClient = {
    * Deletes notifications from the backend by reference numbers
    */
   async delete(referenceNumbers, traceId, userId) {
+    if (!userId) {
+      throw new Error('userId is required to delete notifications')
+    }
+
     const response = await fetch(
       `${tradeImportsAnimalsBackendUrl}/notifications`,
       {
@@ -60,11 +62,7 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error('Failed to delete notifications')
-      error.status = response.status
-      error.statusText = response.statusText
-      logger.error(`Failed to delete notifications: ${error.message}`)
-      throw error
+      throwFetchError('Failed to delete notifications', response)
     }
   }
 }
