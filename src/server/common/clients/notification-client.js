@@ -8,21 +8,13 @@ const tracingHeader = config.get('tracing.header')
 const adminSecret = config.get('tradeImportsAnimalsAdminSecret')
 const logger = createLogger()
 
-const throwFetchError = (message, response) => {
-  const error = new Error(message)
-  error.status = response.status
-  error.statusText = response.statusText
-  logger.error(`${message}: ${response.status} ${response.statusText}`)
-  throw error
-}
-
 export const notificationClient = {
   /**
-   * Retrieves all notifications from the backend
+   * Retrieves all notification reference numbers from the backend
    */
-  async getAll(_request, traceId) {
+  async getAllReferenceNumbers(_request, traceId) {
     const response = await fetch(
-      `${tradeImportsAnimalsBackendUrl}/notifications`,
+      `${tradeImportsAnimalsBackendUrl}/notifications/reference-numbers`,
       {
         method: 'GET',
         headers: {
@@ -33,7 +25,12 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      throwFetchError('Failed to get all notifications', response)
+      const message = 'Failed to get all notification reference numbers'
+      const error = new Error(message)
+      error.status = response.status
+      error.statusText = response.statusText
+      logger.error(`${message}: ${response.status} ${response.statusText}`)
+      throw error
     }
 
     return response.json()
@@ -62,7 +59,12 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      throwFetchError('Failed to delete notifications', response)
+      const message = 'Failed to delete notifications'
+      const error = new Error(message)
+      error.status = response.status
+      error.statusText = response.statusText
+      logger.error(`${message}: ${response.status} ${response.statusText}`)
+      throw error
     }
   }
 }
