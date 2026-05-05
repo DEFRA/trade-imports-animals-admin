@@ -3,19 +3,12 @@ import { vi } from 'vitest'
 import { notificationClient } from './notification-client.js'
 
 const mockLoggerError = vi.fn()
-const mockGetSessionValue = vi.fn()
-const mockSetSessionValue = vi.fn()
 
 vi.mock('../helpers/logging/logger.js', () => ({
   createLogger: () => ({
     info: vi.fn(),
     error: (...args) => mockLoggerError(...args)
   })
-}))
-
-vi.mock('../helpers/session-helpers.js', () => ({
-  getSessionValue: (...args) => mockGetSessionValue(...args),
-  setSessionValue: (...args) => mockSetSessionValue(...args)
 }))
 
 vi.mock('../../../config/config.js', () => ({
@@ -46,8 +39,6 @@ describe('#notificationClient', () => {
   beforeEach(() => {
     originalFetch = global.fetch
     global.fetch = vi.fn()
-    mockGetSessionValue.mockClear()
-    mockSetSessionValue.mockClear()
     mockLoggerError.mockClear()
   })
 
@@ -113,7 +104,8 @@ describe('#notificationClient', () => {
       test('Should send DELETE request to /notifications with reference numbers', async () => {
         fetch.mockResolvedValueOnce({ ok: true })
 
-        await notificationClient.delete(['REF-123', 'REF-456'], traceId)
+        const userId = 'user-abc-123'
+        await notificationClient.delete(['REF-123', 'REF-456'], traceId, userId)
 
         expect(fetch).toHaveBeenCalledTimes(1)
         expect(fetch).toHaveBeenCalledWith(
@@ -123,10 +115,19 @@ describe('#notificationClient', () => {
             headers: {
               'Content-Type': 'application/json',
               'x-trace-id': traceId,
+              'User-Id': userId,
               'Trade-Imports-Animals-Admin-Secret': 'test-admin-secret'
             },
             body: JSON.stringify(['REF-123', 'REF-456'])
           }
+        )
+      })
+    })
+
+    describe('When userId is not provided', () => {
+      test('Should reject with userId is required error', async () => {
+        await expect(notificationClient.delete([], traceId)).rejects.toThrow(
+          'userId is required to delete notifications'
         )
       })
     })
@@ -139,8 +140,9 @@ describe('#notificationClient', () => {
           statusText: 'Internal Server Error'
         })
 
+        const userId = 'user-abc-123'
         await expect(
-          notificationClient.delete(['REF-123'], traceId)
+          notificationClient.delete(['REF-123'], traceId, userId)
         ).rejects.toMatchObject({
           message: 'Failed to delete notifications',
           status: 500,

@@ -25,16 +25,11 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error(
-        'Failed to get all notification reference numbers'
-      )
+      const message = 'Failed to get all notification reference numbers'
+      const error = new Error(message)
       error.status = response.status
       error.statusText = response.statusText
-
-      logger.error(
-        `Failed to get all notification reference numbers: ${error.message}`
-      )
-
+      logger.error(`${message}: ${response.status} ${response.statusText}`)
       throw error
     }
 
@@ -45,6 +40,10 @@ export const notificationClient = {
    * Deletes notifications from the backend by reference numbers
    */
   async delete(referenceNumbers, traceId, userId) {
+    if (!userId) {
+      throw new Error('userId is required to delete notifications')
+    }
+
     const response = await fetch(
       `${tradeImportsAnimalsBackendUrl}/notifications`,
       {
@@ -60,10 +59,11 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const error = new Error('Failed to delete notifications')
+      const message = 'Failed to delete notifications'
+      const error = new Error(message)
       error.status = response.status
       error.statusText = response.statusText
-      logger.error(`Failed to delete notifications: ${error.message}`)
+      logger.error(`${message}: ${response.status} ${response.statusText}`)
       throw error
     }
   }
