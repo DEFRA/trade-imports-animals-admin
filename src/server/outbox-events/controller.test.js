@@ -100,9 +100,7 @@ describe('#outboxEventsController', () => {
       expect(result).toEqual(
         expect.stringContaining(`No outbox events found for`)
       )
-      expect(result).toEqual(
-        expect.stringContaining(referenceNumber)
-      )
+      expect(result).toEqual(expect.stringContaining(referenceNumber))
       expect(result).not.toEqual(expect.stringContaining('govuk-table'))
     })
   })

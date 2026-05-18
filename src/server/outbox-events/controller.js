@@ -8,7 +8,10 @@ export const outboxEventsController = {
 
     let events = null
     if (referenceNumber) {
-      events = await notificationClient.getOutboxEvents(referenceNumber, traceId)
+      events = await notificationClient.getOutboxEvents(
+        referenceNumber,
+        traceId
+      )
     }
 
     return h.view('outbox-events/index', {

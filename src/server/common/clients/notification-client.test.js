@@ -159,8 +159,14 @@ describe('#notificationClient', () => {
       test('Should send GET request to /notifications/{ref}/outbox-events and return events', async () => {
         const referenceNumber = 'DRAFT.IMP.2026.abc123'
         const responseBody = [
-          { aggregateVersion: 1, eventType: 'uk.gov.defra.imports.notification.NotificationSubmitted' },
-          { aggregateVersion: 2, eventType: 'uk.gov.defra.imports.notification.NotificationSubmitted' }
+          {
+            aggregateVersion: 1,
+            eventType: 'uk.gov.defra.imports.notification.NotificationSubmitted'
+          },
+          {
+            aggregateVersion: 2,
+            eventType: 'uk.gov.defra.imports.notification.NotificationSubmitted'
+          }
         ]
 
         fetch.mockResolvedValueOnce({
@@ -168,7 +174,10 @@ describe('#notificationClient', () => {
           json: vi.fn().mockResolvedValue(responseBody)
         })
 
-        const result = await notificationClient.getOutboxEvents(referenceNumber, traceId)
+        const result = await notificationClient.getOutboxEvents(
+          referenceNumber,
+          traceId
+        )
 
         expect(fetch).toHaveBeenCalledTimes(1)
         expect(fetch).toHaveBeenCalledWith(
