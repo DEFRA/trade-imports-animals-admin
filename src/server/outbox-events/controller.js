@@ -14,10 +14,11 @@ export const outboxEventsController = {
       )
     }
 
+    const outboxEvents = 'Outbox events'
     return h.view('outbox-events/index', {
-      pageTitle: 'Outbox events',
-      heading: 'Outbox events',
-      breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Outbox events' }],
+      pageTitle: outboxEvents,
+      heading: outboxEvents,
+      breadcrumbs: [{ text: 'Home', href: '/' }, { text: outboxEvents }],
       referenceNumber,
       events,
       eventsJson: events ? events.map((e) => JSON.stringify(e, null, 2)) : null
