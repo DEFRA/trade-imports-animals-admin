@@ -153,4 +153,65 @@ describe('#notificationClient', () => {
       })
     })
   })
+
+  describe('getOutboxEvents', () => {
+    describe('When getOutboxEvents is called successfully', () => {
+      test('Should send GET request to /notifications/{ref}/outbox-events and return events', async () => {
+        const referenceNumber = 'DRAFT.IMP.2026.abc123'
+        const responseBody = [
+          {
+            aggregateVersion: 1,
+            eventType: 'uk.gov.defra.imports.notification.NotificationSubmitted'
+          },
+          {
+            aggregateVersion: 2,
+            eventType: 'uk.gov.defra.imports.notification.NotificationSubmitted'
+          }
+        ]
+
+        fetch.mockResolvedValueOnce({
+          ok: true,
+          json: vi.fn().mockResolvedValue(responseBody)
+        })
+
+        const result = await notificationClient.getOutboxEvents(
+          referenceNumber,
+          traceId
+        )
+
+        expect(fetch).toHaveBeenCalledTimes(1)
+        expect(fetch).toHaveBeenCalledWith(
+          `http://mock-backend/notifications/${referenceNumber}/outbox-events`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-trace-id': traceId
+            }
+          }
+        )
+        expect(result).toEqual(responseBody)
+      })
+    })
+
+    describe('When getOutboxEvents request fails', () => {
+      test('Should throw an error when getOutboxEvents request fails', async () => {
+        fetch.mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error'
+        })
+
+        await expect(
+          notificationClient.getOutboxEvents('DRAFT.IMP.2026.abc123', traceId)
+        ).rejects.toMatchObject({
+          message: 'Failed to get outbox events',
+          status: 500,
+          statusText: 'Internal Server Error'
+        })
+
+        expect(mockLoggerError).toHaveBeenCalledTimes(1)
+      })
+    })
+  })
 })

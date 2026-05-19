@@ -37,6 +37,33 @@ export const notificationClient = {
   },
 
   /**
+   * Retrieves all outbox events for a notification reference number
+   */
+  async getOutboxEvents(referenceNumber, traceId) {
+    const response = await fetch(
+      `${tradeImportsAnimalsBackendUrl}/notifications/${encodeURIComponent(referenceNumber)}/outbox-events`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          [tracingHeader]: traceId
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const message = 'Failed to get outbox events'
+      const error = new Error(message)
+      error.status = response.status
+      error.statusText = response.statusText
+      logger.error(`${message}: ${response.status} ${response.statusText}`)
+      throw error
+    }
+
+    return response.json()
+  },
+
+  /**
    * Deletes notifications from the backend by reference numbers
    */
   async delete(referenceNumbers, traceId, userId) {
