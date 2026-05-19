@@ -103,5 +103,18 @@ describe('#outboxEventsController', () => {
       expect(result).toEqual(expect.stringContaining(referenceNumber))
       expect(result).not.toEqual(expect.stringContaining('govuk-table'))
     })
+
+    test('Should return 500 when getOutboxEvents throws', async () => {
+      notificationClient.getOutboxEvents.mockRejectedValue(
+        new Error('Backend error')
+      )
+
+      const { statusCode } = await server.inject({
+        method: 'GET',
+        url: '/outbox-events?referenceNumber=DRAFT.IMP.2026.abc123'
+      })
+
+      expect(statusCode).toBe(statusCodes.internalServerError)
+    })
   })
 })
