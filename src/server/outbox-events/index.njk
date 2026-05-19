@@ -1,0 +1,70 @@
+{% extends 'layouts/page.njk' %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "trade-imports-animals-admin"
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      <form method="get" action="/outbox-events" novalidate>
+        {{ govukInput({
+          label: { text: "Notification reference number", classes: "govuk-label--s" },
+          id: "referenceNumber",
+          name: "referenceNumber",
+          value: referenceNumber,
+          spellcheck: false
+        }) }}
+        {{ govukButton({ text: "Search" }) }}
+      </form>
+
+    </div>
+  </div>
+
+  {% if events !== null %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+
+        {% if events.length %}
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Version</th>
+                <th scope="col" class="govuk-table__header">Event type</th>
+                <th scope="col" class="govuk-table__header">Timestamp</th>
+                <th scope="col" class="govuk-table__header">Data</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for event in events %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">{{ event.aggregateVersion }}</td>
+                  <td class="govuk-table__cell">{{ event.eventType }}</td>
+                  <td class="govuk-table__cell">{{ event.timestamp }}</td>
+                  <td class="govuk-table__cell">
+                    <details class="govuk-details">
+                      <summary class="govuk-details__summary">
+                        <span class="govuk-details__summary-text">View JSON</span>
+                      </summary>
+                      <div class="govuk-details__text">
+                        <pre class="govuk-body-s" style="white-space: pre-wrap; word-break: break-all;">{{ eventsJson[loop.index0] }}</pre>
+                      </div>
+                    </details>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="govuk-body">No outbox events found for <strong>{{ referenceNumber }}</strong>.</p>
+        {% endif %}
+
+      </div>
+    </div>
+  {% endif %}
+
+{% endblock %}
