@@ -17,7 +17,7 @@ concurrency:
 
 permissions:
   contents: read
-  statuses: write
+  checks: write
 
 jobs:
   e2e:
@@ -38,25 +38,27 @@ jobs:
       github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Set commit status on PR
+      - name: Report check run on PR
         uses: actions/github-script@v7
         with:
           script: |
             const e2eResult = '${{ needs.e2e.result }}';
-            const state = e2eResult === 'success' ? 'success' : 'failure';
-            const description = e2eResult === 'skipped'
-              ? 'Workspace E2E: skipped (publish failed)'
-              : `Workspace E2E: ${e2eResult}`;
-            // workflow_run.pull_requests is empty for fork PRs — no status will be posted
+            const conclusion = e2eResult === 'success' ? 'success'
+                             : e2eResult === 'skipped' ? 'skipped'
+                             : 'failure';
             const prs = context.payload.workflow_run.pull_requests;
             for (const pr of prs) {
-              await github.rest.repos.createCommitStatus({
+              await github.rest.checks.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                sha: pr.head.sha,
-                state,
-                context: 'E2E Tests',
-                description,
-                target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+                head_sha: pr.head.sha,
+                name: 'E2E Tests',
+                status: 'completed',
+                conclusion,
+                details_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                output: {
+                  title: `Workspace E2E: ${e2eResult}`,
+                  summary: `E2E test suite ${e2eResult}`
+                }
               });
             }
