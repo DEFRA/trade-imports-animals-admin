@@ -46,6 +46,7 @@ jobs:
             const conclusion = e2eResult === 'success' ? 'success'
                              : e2eResult === 'skipped' ? 'skipped'
                              : 'failure';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const prs = context.payload.workflow_run.pull_requests;
             for (const pr of prs) {
               await github.rest.checks.create({
@@ -55,10 +56,10 @@ jobs:
                 name: 'E2E Tests',
                 status: 'completed',
                 conclusion,
-                details_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                details_url: runUrl,
                 output: {
                   title: `Workspace E2E: ${e2eResult}`,
-                  summary: `E2E test suite ${e2eResult}`
+                  summary: `[View full E2E test run](${runUrl})`
                 }
               });
             }
