@@ -1,0 +1,76 @@
+name: Cleanup E2E Reports
+
+on:
+  pull_request:
+    types: [closed]
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup-branch:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+
+      - name: Resolve branch tag
+        id: branch-tag
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          tag="${HEAD_REF//\//-}"
+          tag="$(printf '%s' "$tag" | tr -cd 'a-zA-Z0-9_.-')"
+          tag="$(printf '%s' "$tag" | tr '[:upper:]' '[:lower:]')"
+          while [[ "$tag" == [.-]* ]]; do tag="${tag:1}"; done
+          tag="${tag:0:128}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Remove branch report
+        run: |
+          dir="e2e/${{ steps.branch-tag.outputs.tag }}"
+          if [ -d "$dir" ]; then
+            rm -rf "$dir"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "cleanup: remove E2E report for ${{ steps.branch-tag.outputs.tag }}"
+            git push
+          fi
+
+  cleanup-stale:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Remove reports older than 7 days
+        run: |
+          cutoff=$(date -d '7 days ago' +%s)
+          changed=false
+          for dir in e2e/*/; do
+            [ -d "$dir" ] || continue
+            last_modified=$(git log -1 --format=%ct -- "$dir")
+            if [ -n "$last_modified" ] && [ "$last_modified" -lt "$cutoff" ]; then
+              echo "Removing stale report: $dir"
+              rm -rf "$dir"
+              changed=true
+            fi
+          done
+          if [ "$changed" = true ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "cleanup: remove E2E reports older than 7 days"
+            git push
+          fi
