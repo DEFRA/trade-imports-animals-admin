@@ -50,7 +50,7 @@ describe('#notificationClient', () => {
   describe('getAllReferenceNumbers', () => {
     describe('When getAllReferenceNumbers is called successfully', () => {
       test('Should send GET request to /notifications/reference-numbers and return reference number strings', async () => {
-        const responseBody = ['REF-123', 'REF-456']
+        const responseBody = ['GBN-AG-26-ABC123', 'GBN-AG-26-DEF456']
 
         fetch.mockResolvedValueOnce({
           ok: true,
@@ -105,7 +105,11 @@ describe('#notificationClient', () => {
         fetch.mockResolvedValueOnce({ ok: true })
 
         const userId = 'user-abc-123'
-        await notificationClient.delete(['REF-123', 'REF-456'], traceId, userId)
+        await notificationClient.delete(
+          ['GBN-AG-26-ABC123', 'GBN-AG-26-DEF456'],
+          traceId,
+          userId
+        )
 
         expect(fetch).toHaveBeenCalledTimes(1)
         expect(fetch).toHaveBeenCalledWith(
@@ -118,7 +122,7 @@ describe('#notificationClient', () => {
               'User-Id': userId,
               'Trade-Imports-Animals-Admin-Secret': 'test-admin-secret'
             },
-            body: JSON.stringify(['REF-123', 'REF-456'])
+            body: JSON.stringify(['GBN-AG-26-ABC123', 'GBN-AG-26-DEF456'])
           }
         )
       })
@@ -142,7 +146,7 @@ describe('#notificationClient', () => {
 
         const userId = 'user-abc-123'
         await expect(
-          notificationClient.delete(['REF-123'], traceId, userId)
+          notificationClient.delete(['GBN-AG-26-ABC123'], traceId, userId)
         ).rejects.toMatchObject({
           message: 'Failed to delete notifications',
           status: 500,
