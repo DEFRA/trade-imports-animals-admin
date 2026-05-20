@@ -1,7 +1,7 @@
 ARG PARENT_VERSION=2.10.1-node24.11.1
 ARG PORT=3000
 ARG PORT_DEBUG=9229
-# test e2e trigger
+# test e2e trigger v2
 
 FROM defradigital/node-development:${PARENT_VERSION} AS development
 ARG PARENT_VERSION
