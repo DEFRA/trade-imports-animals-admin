@@ -37,7 +37,9 @@ describe('#notificationsController', () => {
 
   describe('GET /notifications', () => {
     test('Should render notifications table with reference numbers', async () => {
-      notificationClient.getAllReferenceNumbers.mockResolvedValue(['REF-123'])
+      notificationClient.getAllReferenceNumbers.mockResolvedValue([
+        'GBN-AG-26-ABC123'
+      ])
 
       const { result, statusCode } = await server.inject({
         method: 'GET',
@@ -46,13 +48,15 @@ describe('#notificationsController', () => {
 
       expect(statusCode).toBe(statusCodes.ok)
       expect(result).toEqual(expect.stringContaining('Notifications |'))
-      expect(result).toEqual(expect.stringContaining('REF-123'))
+      expect(result).toEqual(expect.stringContaining('GBN-AG-26-ABC123'))
       // Checkbox column
       expect(result).toEqual(expect.stringContaining('id="select-all"'))
       expect(result).toEqual(
         expect.stringContaining('class="notification-checkbox"')
       )
-      expect(result).toEqual(expect.stringContaining('value="REF-123"'))
+      expect(result).toEqual(
+        expect.stringContaining('value="GBN-AG-26-ABC123"')
+      )
       // Delete button (always enabled — no disabled attribute)
       expect(result).toEqual(expect.stringContaining('id="delete-btn"'))
       // Note: scans full rendered HTML. Any use of the string "disabled" anywhere
@@ -120,12 +124,12 @@ describe('#notificationsController', () => {
         method: 'DELETE',
         url: '/notifications',
         headers: { 'Content-Type': 'application/json' },
-        payload: JSON.stringify(['REF-123', 'REF-456'])
+        payload: JSON.stringify(['GBN-AG-26-ABC123', 'GBN-AG-26-DEF456'])
       })
 
       expect(statusCode).toBe(statusCodes.noContent)
       expect(notificationClient.delete).toHaveBeenCalledWith(
-        ['REF-123', 'REF-456'],
+        ['GBN-AG-26-ABC123', 'GBN-AG-26-DEF456'],
         'test-trace-id',
         'test-user-id'
       )
@@ -171,7 +175,7 @@ describe('#notificationsController', () => {
         method: 'DELETE',
         url: '/notifications',
         headers: { 'Content-Type': 'application/json' },
-        payload: JSON.stringify(['REF-123'])
+        payload: JSON.stringify(['GBN-AG-26-ABC123'])
       })
 
       expect(statusCode).toBe(statusCodes.internalServerError)
