@@ -49,8 +49,15 @@ describe('#notificationClient', () => {
 
   describe('getAllReferenceNumbers', () => {
     describe('When getAllReferenceNumbers is called successfully', () => {
-      test('Should send GET request to /notifications/reference-numbers and return reference number strings', async () => {
-        const responseBody = ['GBN-AG-26-ABC123', 'GBN-AG-26-DEF456']
+      test('Should send GET request with default page=0 and return ReferenceNumberPageResponse', async () => {
+        const responseBody = {
+          content: ['GBN-AG-26-ABC123', 'GBN-AG-26-DEF456'],
+          page: 0,
+          size: 25,
+          numberOfElements: 2,
+          totalElements: 2,
+          totalPages: 1
+        }
 
         fetch.mockResolvedValueOnce({
           ok: true,
@@ -64,7 +71,7 @@ describe('#notificationClient', () => {
 
         expect(fetch).toHaveBeenCalledTimes(1)
         expect(fetch).toHaveBeenCalledWith(
-          'http://mock-backend/notifications/reference-numbers',
+          'http://mock-backend/notifications/reference-numbers?page=0',
           {
             method: 'GET',
             headers: {
@@ -74,6 +81,40 @@ describe('#notificationClient', () => {
           }
         )
 
+        expect(result).toEqual(responseBody)
+      })
+
+      test('Should send GET request with custom page param', async () => {
+        const responseBody = {
+          content: [],
+          page: 2,
+          size: 25,
+          numberOfElements: 0,
+          totalElements: 60,
+          totalPages: 3
+        }
+
+        fetch.mockResolvedValueOnce({
+          ok: true,
+          json: vi.fn().mockResolvedValue(responseBody)
+        })
+
+        const result = await notificationClient.getAllReferenceNumbers(
+          mockRequest,
+          traceId,
+          { page: 2 }
+        )
+
+        expect(fetch).toHaveBeenCalledWith(
+          'http://mock-backend/notifications/reference-numbers?page=2',
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-trace-id': traceId
+            }
+          }
+        )
         expect(result).toEqual(responseBody)
       })
     })

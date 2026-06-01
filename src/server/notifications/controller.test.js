@@ -36,10 +36,22 @@ describe('#notificationsController', () => {
   })
 
   describe('GET /notifications', () => {
+    function pageResponse(content, overrides = {}) {
+      return {
+        content,
+        page: 0,
+        size: 25,
+        numberOfElements: content.length,
+        totalElements: content.length,
+        totalPages: content.length > 0 ? 1 : 0,
+        ...overrides
+      }
+    }
+
     test('Should render notifications table with reference numbers', async () => {
-      notificationClient.getAllReferenceNumbers.mockResolvedValue([
-        'GBN-AG-26-ABC123'
-      ])
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(
+        pageResponse(['GBN-AG-26-ABC123'])
+      )
 
       const { result, statusCode } = await server.inject({
         method: 'GET',
@@ -77,8 +89,113 @@ describe('#notificationsController', () => {
       expect(result).toEqual(expect.stringContaining('id="manual-delete-btn"'))
     })
 
+    test('Should request page=0 from backend when no page query param', async () => {
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(
+        pageResponse([])
+      )
+
+      await server.inject({ method: 'GET', url: '/notifications' })
+
+      expect(notificationClient.getAllReferenceNumbers).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.any(String),
+        { page: 0 }
+      )
+    })
+
+    test('Should convert 1-based ?page=3 to 0-based page=2 when calling backend', async () => {
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(
+        pageResponse(['GBN-AG-26-XYZ'], {
+          page: 2,
+          totalElements: 60,
+          totalPages: 3
+        })
+      )
+
+      await server.inject({ method: 'GET', url: '/notifications?page=3' })
+
+      expect(notificationClient.getAllReferenceNumbers).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.any(String),
+        { page: 2 }
+      )
+    })
+
+    test('Should clamp non-positive, missing or non-numeric ?page= to backend page=0', async () => {
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(
+        pageResponse([])
+      )
+
+      for (const url of [
+        '/notifications?page=0',
+        '/notifications?page=-3',
+        '/notifications?page=abc',
+        '/notifications?page='
+      ]) {
+        notificationClient.getAllReferenceNumbers.mockClear()
+        await server.inject({ method: 'GET', url })
+        expect(notificationClient.getAllReferenceNumbers).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.any(String),
+          { page: 0 }
+        )
+      }
+    })
+
+    test('Should render govukPagination with 1-based hrefs when totalPages > 1', async () => {
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(
+        pageResponse(['GBN-AG-26-ABC123'], {
+          page: 1,
+          totalElements: 60,
+          totalPages: 3
+        })
+      )
+
+      const { result } = await server.inject({
+        method: 'GET',
+        url: '/notifications?page=2'
+      })
+
+      expect(result).toEqual(expect.stringContaining('govuk-pagination'))
+      // Previous link points at /notifications (page 1, no query)
+      expect(result).toEqual(expect.stringContaining('href="/notifications"'))
+      // Next link is page 3
+      expect(result).toEqual(
+        expect.stringContaining('href="/notifications?page=3"')
+      )
+    })
+
+    test('Should NOT render govukPagination when totalPages <= 1', async () => {
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(
+        pageResponse(['GBN-AG-26-ABC123'])
+      )
+
+      const { result } = await server.inject({
+        method: 'GET',
+        url: '/notifications'
+      })
+
+      expect(result).not.toEqual(expect.stringContaining('govuk-pagination'))
+    })
+
+    test('Should redirect to /notifications when requested page is out of range', async () => {
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(
+        pageResponse([], { page: 99, totalElements: 60, totalPages: 3 })
+      )
+
+      const { statusCode, headers } = await server.inject({
+        method: 'GET',
+        url: '/notifications?page=100'
+      })
+
+      expect(statusCode).toBe(302)
+      expect(headers.location).toBe('/notifications')
+    })
+
     test('Should render empty state when no notifications exist', async () => {
-      notificationClient.getAllReferenceNumbers.mockResolvedValue([])
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(
+        pageResponse([])
+      )
 
       const { result, statusCode } = await server.inject({
         method: 'GET',

@@ -1,6 +1,7 @@
 {% extends 'layouts/page.njk' %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% block content %}
   {{ appHeading({
@@ -59,6 +60,11 @@
       </div>
 
       {% if referenceNumbers.length %}
+        {% if totalElements %}
+          <p class="govuk-body" data-testid="results-count">
+            {{ totalElements }} notification{% if totalElements != 1 %}s{% endif %}
+          </p>
+        {% endif %}
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
@@ -89,6 +95,10 @@
           classes: "govuk-button--warning",
           attributes: { id: "delete-btn" }
         }) }}
+
+        {% if pagination %}
+          {{ govukPagination(pagination) }}
+        {% endif %}
 
       {% else %}
         <p class="govuk-body">There are no notifications.</p>
