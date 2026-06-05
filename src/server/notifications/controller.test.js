@@ -89,6 +89,31 @@ describe('#notificationsController', () => {
       expect(result).toEqual(expect.stringContaining('id="manual-delete-btn"'))
     })
 
+    test('Should render govukPagination when notifications exceed the admin page size of 50', async () => {
+      const referenceNumbers = Array.from(
+        { length: 50 },
+        (_, i) => `GBN-AG-26-${String(i + 1).padStart(6, '0')}`
+      )
+      notificationClient.getAllReferenceNumbers.mockResolvedValue(
+        pageResponse(referenceNumbers, {
+          page: 0,
+          totalElements: 51,
+          totalPages: 2
+        })
+      )
+
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: '/notifications'
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(result).toEqual(expect.stringContaining('govuk-pagination'))
+      expect(result).toEqual(
+        expect.stringContaining('href="/notifications?page=2"')
+      )
+    })
+
     test('Should request page=0 from backend when no page query param', async () => {
       notificationClient.getAllReferenceNumbers.mockResolvedValue(
         pageResponse([])
