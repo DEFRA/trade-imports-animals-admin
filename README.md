@@ -174,7 +174,7 @@ docker run -p 3000:3000 trade-imports-animals-admin
 
 ### Local stack
 
-The full local environment (MongoDB, Localstack, Redis, the stubs, and every
+The full local environment (MongoDB, Floci, Redis, the stubs, and every
 trade-imports-animals service including this one) is the workspace stack in
 [DEFRA/trade-imports-animals-workspace](https://github.com/DEFRA/trade-imports-animals-workspace):
 
