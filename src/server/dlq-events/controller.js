@@ -18,7 +18,6 @@ function toRow(message) {
   return {
     id: message.id,
     messageGroupId: message.message_group_id,
-    receiveCount: message.approximate_receive_count,
     bodyJson: prettyBody(message.body)
   }
 }
