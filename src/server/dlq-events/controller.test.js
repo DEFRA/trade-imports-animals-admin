@@ -94,6 +94,54 @@ describe('#dlqEventsController', () => {
       expect(result).toEqual(expect.stringContaining('Replayed 2 message(s).'))
     })
 
+    test('Should show a success banner after a delete redirect', async () => {
+      dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
+
+      const { result } = await server.inject({
+        method: 'GET',
+        url: '/dlq-events?deleted=1'
+      })
+
+      expect(result).toEqual(expect.stringContaining('Deleted 1 message(s).'))
+    })
+
+    test('Should show an error banner after an action-failed redirect', async () => {
+      dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
+
+      const { result } = await server.inject({
+        method: 'GET',
+        url: '/dlq-events?error=action-failed'
+      })
+
+      expect(result).toEqual(
+        expect.stringContaining(
+          'There was a problem contacting the gateway. Please try again.'
+        )
+      )
+    })
+
+    test('Should render a non-JSON message body as-is', async () => {
+      dlqClient.list.mockResolvedValue({
+        messages: [
+          {
+            id: 'evt-1',
+            message_group_id: 'group-a',
+            approximate_receive_count: 1,
+            body: 'not json'
+          }
+        ],
+        approximate_count: 1
+      })
+
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: '/dlq-events'
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(result).toEqual(expect.stringContaining('not json'))
+    })
+
     test('Should show an error banner when nothing was selected', async () => {
       dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
 
