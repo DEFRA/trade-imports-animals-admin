@@ -63,7 +63,7 @@ export const dlqEventsController = {
 export const dlqEventsActionController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
-    const ids = [].concat(request.payload?.ids ?? []).filter(Boolean)
+    const ids = [request.payload?.ids ?? []].flat().filter(Boolean)
     const action = request.payload?.action
 
     if (ids.length === 0) {
