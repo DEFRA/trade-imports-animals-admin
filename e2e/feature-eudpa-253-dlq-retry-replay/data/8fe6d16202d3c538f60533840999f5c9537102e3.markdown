@@ -1,0 +1,371 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: e2e/pages/admin/admin-notifications.spec.ts >> Notifications (admin) >> allows deleting a notification by checkbox
+- Location: tests/e2e/pages/admin/admin-notifications.spec.ts:45:3
+
+# Error details
+
+```
+Error: Notification GBN-AG-26-000002 not found; no more pages.
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - link "GOV.UK" [ref=e7] [cursor=pointer]:
+      - /url: https://www.gov.uk/
+      - img "GOV.UK" [ref=e8]
+    - region "Service information" [ref=e21]:
+      - generic [ref=e23]:
+        - link "trade-imports-animals-admin" [ref=e25] [cursor=pointer]:
+          - /url: /
+        - navigation "Menu" [ref=e26]:
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link "Home" [ref=e29] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e30]:
+              - link "About" [ref=e31] [cursor=pointer]:
+                - /url: /about
+  - generic [ref=e32]:
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - img [ref=e37]
+        - generic [ref=e40]: test.user11@defra.gov.uk
+      - generic [ref=e41]: "|"
+      - link "Sign out" [ref=e42] [cursor=pointer]:
+        - /url: /signout
+    - navigation "Breadcrumb" [ref=e43]:
+      - list [ref=e44]:
+        - listitem [ref=e45]:
+          - link "Home" [ref=e46] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=e47]: Notifications
+    - main [ref=e48]:
+      - generic [ref=e50]:
+        - heading "Notifications" [level=1] [ref=e51]
+        - generic [ref=e52]: trade-imports-animals-admin
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e57]:
+            - generic [ref=e58]: Reference number
+            - textbox "Reference number" [ref=e59]
+          - button "Delete notification by reference number" [ref=e61] [cursor=pointer]: Delete
+        - paragraph [ref=e62]: 85 notifications
+        - table [ref=e63]:
+          - rowgroup [ref=e64]:
+            - row "Reference number Select" [ref=e65]:
+              - columnheader "Reference number" [ref=e66]
+              - columnheader "Select" [ref=e67]:
+                - checkbox "Select all notifications" [ref=e68]
+          - rowgroup [ref=e69]:
+            - row "GBN-AG-26-000034 Select notification GBN-AG-26-000034" [ref=e70]:
+              - cell "GBN-AG-26-000034" [ref=e71]
+              - cell "Select notification GBN-AG-26-000034" [ref=e72]:
+                - checkbox "Select notification GBN-AG-26-000034" [ref=e73]
+            - row "GBN-AG-26-000052 Select notification GBN-AG-26-000052" [ref=e74]:
+              - cell "GBN-AG-26-000052" [ref=e75]
+              - cell "Select notification GBN-AG-26-000052" [ref=e76]:
+                - checkbox "Select notification GBN-AG-26-000052" [ref=e77]
+            - row "GBN-AG-26-000015 Select notification GBN-AG-26-000015" [ref=e78]:
+              - cell "GBN-AG-26-000015" [ref=e79]
+              - cell "Select notification GBN-AG-26-000015" [ref=e80]:
+                - checkbox "Select notification GBN-AG-26-000015" [ref=e81]
+            - row "GBN-AG-26-000033 Select notification GBN-AG-26-000033" [ref=e82]:
+              - cell "GBN-AG-26-000033" [ref=e83]
+              - cell "Select notification GBN-AG-26-000033" [ref=e84]:
+                - checkbox "Select notification GBN-AG-26-000033" [ref=e85]
+            - row "GBN-AG-26-000051 Select notification GBN-AG-26-000051" [ref=e86]:
+              - cell "GBN-AG-26-000051" [ref=e87]
+              - cell "Select notification GBN-AG-26-000051" [ref=e88]:
+                - checkbox "Select notification GBN-AG-26-000051" [ref=e89]
+            - row "GBN-AG-26-000014 Select notification GBN-AG-26-000014" [ref=e90]:
+              - cell "GBN-AG-26-000014" [ref=e91]
+              - cell "Select notification GBN-AG-26-000014" [ref=e92]:
+                - checkbox "Select notification GBN-AG-26-000014" [ref=e93]
+            - row "GBN-AG-26-000032 Select notification GBN-AG-26-000032" [ref=e94]:
+              - cell "GBN-AG-26-000032" [ref=e95]
+              - cell "Select notification GBN-AG-26-000032" [ref=e96]:
+                - checkbox "Select notification GBN-AG-26-000032" [ref=e97]
+            - row "GBN-AG-26-000050 Select notification GBN-AG-26-000050" [ref=e98]:
+              - cell "GBN-AG-26-000050" [ref=e99]
+              - cell "Select notification GBN-AG-26-000050" [ref=e100]:
+                - checkbox "Select notification GBN-AG-26-000050" [ref=e101]
+            - row "GBN-AG-26-000013 Select notification GBN-AG-26-000013" [ref=e102]:
+              - cell "GBN-AG-26-000013" [ref=e103]
+              - cell "Select notification GBN-AG-26-000013" [ref=e104]:
+                - checkbox "Select notification GBN-AG-26-000013" [ref=e105]
+            - row "GBN-AG-26-000031 Select notification GBN-AG-26-000031" [ref=e106]:
+              - cell "GBN-AG-26-000031" [ref=e107]
+              - cell "Select notification GBN-AG-26-000031" [ref=e108]:
+                - checkbox "Select notification GBN-AG-26-000031" [ref=e109]
+            - row "GBN-AG-26-000049 Select notification GBN-AG-26-000049" [ref=e110]:
+              - cell "GBN-AG-26-000049" [ref=e111]
+              - cell "Select notification GBN-AG-26-000049" [ref=e112]:
+                - checkbox "Select notification GBN-AG-26-000049" [ref=e113]
+            - row "GBN-AG-26-000012 Select notification GBN-AG-26-000012" [ref=e114]:
+              - cell "GBN-AG-26-000012" [ref=e115]
+              - cell "Select notification GBN-AG-26-000012" [ref=e116]:
+                - checkbox "Select notification GBN-AG-26-000012" [ref=e117]
+            - row "GBN-AG-26-000030 Select notification GBN-AG-26-000030" [ref=e118]:
+              - cell "GBN-AG-26-000030" [ref=e119]
+              - cell "Select notification GBN-AG-26-000030" [ref=e120]:
+                - checkbox "Select notification GBN-AG-26-000030" [ref=e121]
+            - row "GBN-AG-26-000048 Select notification GBN-AG-26-000048" [ref=e122]:
+              - cell "GBN-AG-26-000048" [ref=e123]
+              - cell "Select notification GBN-AG-26-000048" [ref=e124]:
+                - checkbox "Select notification GBN-AG-26-000048" [ref=e125]
+            - row "GBN-AG-26-000047 Select notification GBN-AG-26-000047" [ref=e126]:
+              - cell "GBN-AG-26-000047" [ref=e127]
+              - cell "Select notification GBN-AG-26-000047" [ref=e128]:
+                - checkbox "Select notification GBN-AG-26-000047" [ref=e129]
+            - row "GBN-AG-26-000011 Select notification GBN-AG-26-000011" [ref=e130]:
+              - cell "GBN-AG-26-000011" [ref=e131]
+              - cell "Select notification GBN-AG-26-000011" [ref=e132]:
+                - checkbox "Select notification GBN-AG-26-000011" [ref=e133]
+            - row "GBN-AG-26-000029 Select notification GBN-AG-26-000029" [ref=e134]:
+              - cell "GBN-AG-26-000029" [ref=e135]
+              - cell "Select notification GBN-AG-26-000029" [ref=e136]:
+                - checkbox "Select notification GBN-AG-26-000029" [ref=e137]
+            - row "GBN-AG-26-000046 Select notification GBN-AG-26-000046" [ref=e138]:
+              - cell "GBN-AG-26-000046" [ref=e139]
+              - cell "Select notification GBN-AG-26-000046" [ref=e140]:
+                - checkbox "Select notification GBN-AG-26-000046" [ref=e141]
+            - row "GBN-AG-26-000010 Select notification GBN-AG-26-000010" [ref=e142]:
+              - cell "GBN-AG-26-000010" [ref=e143]
+              - cell "Select notification GBN-AG-26-000010" [ref=e144]:
+                - checkbox "Select notification GBN-AG-26-000010" [ref=e145]
+            - row "GBN-AG-26-000028 Select notification GBN-AG-26-000028" [ref=e146]:
+              - cell "GBN-AG-26-000028" [ref=e147]
+              - cell "Select notification GBN-AG-26-000028" [ref=e148]:
+                - checkbox "Select notification GBN-AG-26-000028" [ref=e149]
+            - row "GBN-AG-26-000045 Select notification GBN-AG-26-000045" [ref=e150]:
+              - cell "GBN-AG-26-000045" [ref=e151]
+              - cell "Select notification GBN-AG-26-000045" [ref=e152]:
+                - checkbox "Select notification GBN-AG-26-000045" [ref=e153]
+            - row "GBN-AG-26-000009 Select notification GBN-AG-26-000009" [ref=e154]:
+              - cell "GBN-AG-26-000009" [ref=e155]
+              - cell "Select notification GBN-AG-26-000009" [ref=e156]:
+                - checkbox "Select notification GBN-AG-26-000009" [ref=e157]
+            - row "GBN-AG-26-000027 Select notification GBN-AG-26-000027" [ref=e158]:
+              - cell "GBN-AG-26-000027" [ref=e159]
+              - cell "Select notification GBN-AG-26-000027" [ref=e160]:
+                - checkbox "Select notification GBN-AG-26-000027" [ref=e161]
+            - row "GBN-AG-26-000044 Select notification GBN-AG-26-000044" [ref=e162]:
+              - cell "GBN-AG-26-000044" [ref=e163]
+              - cell "Select notification GBN-AG-26-000044" [ref=e164]:
+                - checkbox "Select notification GBN-AG-26-000044" [ref=e165]
+            - row "GBN-AG-26-000008 Select notification GBN-AG-26-000008" [ref=e166]:
+              - cell "GBN-AG-26-000008" [ref=e167]
+              - cell "Select notification GBN-AG-26-000008" [ref=e168]:
+                - checkbox "Select notification GBN-AG-26-000008" [ref=e169]
+            - row "GBN-AG-26-000026 Select notification GBN-AG-26-000026" [ref=e170]:
+              - cell "GBN-AG-26-000026" [ref=e171]
+              - cell "Select notification GBN-AG-26-000026" [ref=e172]:
+                - checkbox "Select notification GBN-AG-26-000026" [ref=e173]
+            - row "GBN-AG-26-000043 Select notification GBN-AG-26-000043" [ref=e174]:
+              - cell "GBN-AG-26-000043" [ref=e175]
+              - cell "Select notification GBN-AG-26-000043" [ref=e176]:
+                - checkbox "Select notification GBN-AG-26-000043" [ref=e177]
+            - row "GBN-AG-26-000007 Select notification GBN-AG-26-000007" [ref=e178]:
+              - cell "GBN-AG-26-000007" [ref=e179]
+              - cell "Select notification GBN-AG-26-000007" [ref=e180]:
+                - checkbox "Select notification GBN-AG-26-000007" [ref=e181]
+            - row "GBN-AG-26-000025 Select notification GBN-AG-26-000025" [ref=e182]:
+              - cell "GBN-AG-26-000025" [ref=e183]
+              - cell "Select notification GBN-AG-26-000025" [ref=e184]:
+                - checkbox "Select notification GBN-AG-26-000025" [ref=e185]
+            - row "GBN-AG-26-000042 Select notification GBN-AG-26-000042" [ref=e186]:
+              - cell "GBN-AG-26-000042" [ref=e187]
+              - cell "Select notification GBN-AG-26-000042" [ref=e188]:
+                - checkbox "Select notification GBN-AG-26-000042" [ref=e189]
+            - row "GBN-AG-26-000006 Select notification GBN-AG-26-000006" [ref=e190]:
+              - cell "GBN-AG-26-000006" [ref=e191]
+              - cell "Select notification GBN-AG-26-000006" [ref=e192]:
+                - checkbox "Select notification GBN-AG-26-000006" [ref=e193]
+            - row "GBN-AG-26-000024 Select notification GBN-AG-26-000024" [ref=e194]:
+              - cell "GBN-AG-26-000024" [ref=e195]
+              - cell "Select notification GBN-AG-26-000024" [ref=e196]:
+                - checkbox "Select notification GBN-AG-26-000024" [ref=e197]
+            - row "GBN-AG-26-000023 Select notification GBN-AG-26-000023" [ref=e198]:
+              - cell "GBN-AG-26-000023" [ref=e199]
+              - cell "Select notification GBN-AG-26-000023" [ref=e200]:
+                - checkbox "Select notification GBN-AG-26-000023" [ref=e201]
+            - row "GBN-AG-26-000041 Select notification GBN-AG-26-000041" [ref=e202]:
+              - cell "GBN-AG-26-000041" [ref=e203]
+              - cell "Select notification GBN-AG-26-000041" [ref=e204]:
+                - checkbox "Select notification GBN-AG-26-000041" [ref=e205]
+            - row "GBN-AG-26-000005 Select notification GBN-AG-26-000005" [ref=e206]:
+              - cell "GBN-AG-26-000005" [ref=e207]
+              - cell "Select notification GBN-AG-26-000005" [ref=e208]:
+                - checkbox "Select notification GBN-AG-26-000005" [ref=e209]
+        - paragraph [ref=e210]:
+          - generic [ref=e211]: "Error:"
+          - text: Select at least one notification to delete
+        - button "Delete" [ref=e212] [cursor=pointer]
+        - navigation "Pagination" [ref=e213]:
+          - link "Previous page" [ref=e215] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e216]
+            - generic [ref=e218]:
+              - text: Previous
+              - generic [ref=e219]: page
+          - list [ref=e220]:
+            - listitem [ref=e221]:
+              - link "Page 1" [ref=e222] [cursor=pointer]:
+                - /url: /notifications
+                - text: "1"
+            - listitem [ref=e223]:
+              - link "Page 2" [ref=e224] [cursor=pointer]:
+                - /url: /notifications?page=2
+                - text: "2"
+  - contentinfo [ref=e225]:
+    - generic [ref=e238]:
+      - generic [ref=e239]:
+        - heading "Support links" [level=2] [ref=e240]
+        - list [ref=e241]:
+          - listitem [ref=e242]:
+            - link "Privacy" [ref=e243] [cursor=pointer]:
+              - /url: https://www.gov.uk/help/privacy-notice
+          - listitem [ref=e244]:
+            - link "Cookies" [ref=e245] [cursor=pointer]:
+              - /url: https://www.gov.uk/help/cookies
+          - listitem [ref=e246]:
+            - link "Accessibility statement" [ref=e247] [cursor=pointer]:
+              - /url: https://www.gov.uk/help/accessibility-statement
+        - img [ref=e248]
+        - generic [ref=e250]:
+          - text: All content is available under the
+          - link "Open Government Licence v3.0" [ref=e251] [cursor=pointer]:
+            - /url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+          - text: ", except where otherwise stated"
+      - link "© Crown copyright" [ref=e253] [cursor=pointer]:
+        - /url: https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/
+```
+
+# Test source
+
+```ts
+  5   |   readonly expectedUrl = '/notifications';
+  6   | 
+  7   |   get heading(): Locator {
+  8   |     return this.page.getByRole('heading', { level: 1, name: 'Notifications' });
+  9   |   }
+  10  | 
+  11  |   get inputReferenceNumber(): Locator {
+  12  |     return this.page.getByRole('textbox', { name: 'Reference number' });
+  13  |   }
+  14  | 
+  15  |   get btnDeleteByReferenceNumber(): Locator {
+  16  |     return this.page.getByRole('button', { name: 'Delete notification by' });
+  17  |   }
+  18  | 
+  19  |   get checkBoxSelectAll(): Locator {
+  20  |     return this.page.getByRole('checkbox', { name: 'Select all notifications', exact: true });
+  21  |   }
+  22  | 
+  23  |   get tableRows(): Locator {
+  24  |     return this.page.getByRole('table').getByRole('row');
+  25  |   }
+  26  | 
+  27  |   get btnDelete(): Locator {
+  28  |     return this.page.getByRole('button', { name: 'Delete', exact: true });
+  29  |   }
+  30  | 
+  31  |   get btnConfirm(): Locator {
+  32  |     return this.page.getByRole('button', { name: 'Confirm' });
+  33  |   }
+  34  | 
+  35  |   get btnCancel(): Locator {
+  36  |     return this.page.getByRole('button', { name: 'Cancel' });
+  37  |   }
+  38  | 
+  39  |   get alertSuccess(): Locator {
+  40  |     return this.page.getByRole('alert').filter({ has: this.page.getByRole('heading', { name: 'Success' }) });
+  41  |   }
+  42  | 
+  43  |   get alertImportant(): Locator {
+  44  |     return this.page.getByRole('alert').filter({ has: this.page.getByRole('heading', { name: 'Important' }) });
+  45  |   }
+  46  | 
+  47  |   get pagination(): Locator {
+  48  |     return this.page.getByRole('navigation', { name: 'Pagination' });
+  49  |   }
+  50  | 
+  51  |   get resultsCount(): Locator {
+  52  |     return this.page.getByTestId('results-count');
+  53  |   }
+  54  | 
+  55  |   async currentPageReferences(): Promise<string[]> {
+  56  |     return this.page.locator('.notification-checkbox').evaluateAll((elements) => (elements as HTMLInputElement[]).map((el) => el.value));
+  57  |   }
+  58  | 
+  59  |   async getTotalElements(): Promise<number> {
+  60  |     // Wait for the page itself to render before deciding whether the count
+  61  |     // element is absent because we're still loading, or absent because the
+  62  |     // template legitimately omitted it (empty state).
+  63  |     await this.heading.waitFor({ state: 'visible' });
+  64  | 
+  65  |     if ((await this.resultsCount.count()) === 0) {
+  66  |       return 0;
+  67  |     }
+  68  | 
+  69  |     const text = (await this.resultsCount.textContent()) ?? '';
+  70  |     const match = text.match(/(\d+)/);
+  71  |     if (!match) {
+  72  |       throw new Error(`Could not parse totalElements from results-count text: "${text}"`);
+  73  |     }
+  74  |     return Number(match[1]);
+  75  |   }
+  76  | 
+  77  |   async open(attemptSignIn: boolean = true): Promise<void> {
+  78  |     await this.page.goto(this.expectedUrl);
+  79  |     await this.signInWhenRequested(attemptSignIn);
+  80  |   }
+  81  | 
+  82  |   tableRowByReference(referenceNumber: string): Locator {
+  83  |     return this.page.getByRole('table').getByRole('row', { name: referenceNumber });
+  84  |   }
+  85  | 
+  86  |   checkboxNotificationByReference(referenceNumber: string): Locator {
+  87  |     return this.page.getByRole('checkbox', { name: `Select notification ${referenceNumber}` });
+  88  |   }
+  89  | 
+  90  |   async findRowByReference(referenceNumber: string, maxPages: number = 10): Promise<void> {
+  91  |     await this.page.goto(this.expectedUrl);
+  92  | 
+  93  |     const checkbox = this.checkboxNotificationByReference(referenceNumber);
+  94  |     const nextLink = this.pagination.getByRole('link', { name: 'Next page' });
+  95  | 
+  96  |     for (let visited = 0; visited < maxPages; visited++) {
+  97  |       // isVisible() does not auto-wait, so anchor each iteration on the always-rendered
+  98  |       // heading — the page is server-rendered, so once it arrives the table (when present)
+  99  |       // is already in the DOM. The table itself only renders when notifications exist.
+  100 |       await this.heading.waitFor();
+  101 |       if (await checkbox.isVisible()) {
+  102 |         return;
+  103 |       }
+  104 |       if (!(await nextLink.isVisible())) {
+> 105 |         throw new Error(`Notification ${referenceNumber} not found; no more pages.`);
+      |               ^ Error: Notification GBN-AG-26-000002 not found; no more pages.
+  106 |       }
+  107 |       const currentUrl = this.page.url();
+  108 |       await nextLink.click();
+  109 |       await this.page.waitForURL((url) => url.toString() !== currentUrl);
+  110 |     }
+  111 | 
+  112 |     throw new Error(`Notification ${referenceNumber} not found within ${maxPages} pages.`);
+  113 |   }
+  114 | }
+  115 | 
+```
