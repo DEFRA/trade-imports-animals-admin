@@ -86,72 +86,68 @@ describe('#dlqClient', () => {
     })
   })
 
-  describe('replay', () => {
-    test('Should POST the ids to /replay with the admin secret', async () => {
+  describe('replayAll', () => {
+    test('Should POST to /replay-all with the admin secret and no body', async () => {
       fetch.mockResolvedValueOnce({ ok: true })
 
-      await dlqClient.replay(['id-1', 'id-2'], traceId)
+      await dlqClient.replayAll(traceId)
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://mock-gateway/dlq/notifications/replay',
+        'http://mock-gateway/dlq/notifications/replay-all',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-trace-id': traceId,
             'Trade-Imports-Animals-Admin-Secret': 'test-admin-secret'
-          },
-          body: JSON.stringify({ ids: ['id-1', 'id-2'] })
+          }
         }
       )
     })
 
-    test('Should throw when replay fails', async () => {
+    test('Should throw when replay-all fails', async () => {
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
         statusText: 'Unauthorized'
       })
 
-      await expect(dlqClient.replay(['id-1'], traceId)).rejects.toMatchObject({
-        message: 'Failed to replay DLQ messages',
+      await expect(dlqClient.replayAll(traceId)).rejects.toMatchObject({
+        message: 'Failed to start DLQ replay-all',
         status: 401
       })
       expect(mockLoggerError).toHaveBeenCalledTimes(1)
     })
   })
 
-  describe('deleteEvents', () => {
-    test('Should DELETE the ids with the admin secret', async () => {
+  describe('deleteAll', () => {
+    test('Should POST to /delete-all with the admin secret and no body', async () => {
       fetch.mockResolvedValueOnce({ ok: true })
 
-      await dlqClient.deleteEvents(['id-1'], traceId)
+      await dlqClient.deleteAll(traceId)
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://mock-gateway/dlq/notifications',
+        'http://mock-gateway/dlq/notifications/delete-all',
         {
-          method: 'DELETE',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'x-trace-id': traceId,
             'Trade-Imports-Animals-Admin-Secret': 'test-admin-secret'
-          },
-          body: JSON.stringify({ ids: ['id-1'] })
+          }
         }
       )
     })
 
-    test('Should throw when delete fails', async () => {
+    test('Should throw when delete-all fails', async () => {
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error'
       })
 
-      await expect(
-        dlqClient.deleteEvents(['id-1'], traceId)
-      ).rejects.toMatchObject({
-        message: 'Failed to delete DLQ messages',
+      await expect(dlqClient.deleteAll(traceId)).rejects.toMatchObject({
+        message: 'Failed to start DLQ delete-all',
         status: 500
       })
       expect(mockLoggerError).toHaveBeenCalledTimes(1)

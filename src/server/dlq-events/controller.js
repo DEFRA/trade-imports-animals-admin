@@ -2,7 +2,7 @@ import { getTraceId } from '@defra/hapi-tracing'
 import { dlqClient } from '../common/clients/dlq-client.js'
 
 const DLQ_EVENTS_PATH = '/dlq-events'
-const PAGE_LIMIT = 10
+const PAGE_LIMIT = 25
 const TITLE = 'DLQ process'
 
 /** Pretty-print a raw message body if it is JSON, otherwise return it as-is. */
@@ -25,13 +25,16 @@ function toRow(message) {
 /** Build the success/error banner from the post-redirect query, if any. */
 function banner(query) {
   if (query.replayed) {
-    return { type: 'success', text: `Replayed ${query.replayed} message(s).` }
+    return {
+      type: 'success',
+      text: 'Replay-all started. Messages will move back onto the source queue shortly.'
+    }
   }
   if (query.deleted) {
-    return { type: 'success', text: `Deleted ${query.deleted} message(s).` }
-  }
-  if (query.error === 'none-selected') {
-    return { type: 'error', text: 'Select at least one message.' }
+    return {
+      type: 'success',
+      text: 'Delete-all started. The queue may take up to a minute to clear.'
+    }
   }
   if (query.error === 'action-failed') {
     return {
@@ -62,20 +65,15 @@ export const dlqEventsController = {
 export const dlqEventsActionController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
-    const ids = [request.payload?.ids ?? []].flat().filter(Boolean)
     const action = request.payload?.action
 
-    if (ids.length === 0) {
-      return h.redirect(`${DLQ_EVENTS_PATH}?error=none-selected`)
-    }
-
     try {
-      if (action === 'delete') {
-        await dlqClient.deleteEvents(ids, traceId)
-        return h.redirect(`${DLQ_EVENTS_PATH}?deleted=${ids.length}`)
+      if (action === 'delete-all') {
+        await dlqClient.deleteAll(traceId)
+        return h.redirect(`${DLQ_EVENTS_PATH}?deleted=1`)
       }
-      await dlqClient.replay(ids, traceId)
-      return h.redirect(`${DLQ_EVENTS_PATH}?replayed=${ids.length}`)
+      await dlqClient.replayAll(traceId)
+      return h.redirect(`${DLQ_EVENTS_PATH}?replayed=1`)
     } catch {
       return h.redirect(`${DLQ_EVENTS_PATH}?error=action-failed`)
     }

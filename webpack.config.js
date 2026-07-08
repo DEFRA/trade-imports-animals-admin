@@ -25,9 +25,6 @@ export default {
     },
     notifications: {
       import: ['./javascripts/notifications.js']
-    },
-    'dlq-events': {
-      import: ['./javascripts/dlq-events.js']
     }
   },
   experiments: {

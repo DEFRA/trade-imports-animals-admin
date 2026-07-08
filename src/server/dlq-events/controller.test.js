@@ -15,8 +15,8 @@ vi.mock('../../config/config.js', async (importOriginal) => {
 vi.mock('../common/clients/dlq-client.js', () => ({
   dlqClient: {
     list: vi.fn(),
-    replay: vi.fn(),
-    deleteEvents: vi.fn()
+    replayAll: vi.fn(),
+    deleteAll: vi.fn()
   }
 }))
 
@@ -39,13 +39,12 @@ describe('#dlqEventsController', () => {
   })
 
   describe('GET /dlq-events', () => {
-    test('Should list the first 10 messages and render the table', async () => {
+    test('Should list the first 25 messages and render the table', async () => {
       dlqClient.list.mockResolvedValue({
         messages: [
           {
             id: 'evt-1',
             message_group_id: 'group-a',
-            approximate_receive_count: 3,
             body: '{"key":"a"}'
           }
         ],
@@ -59,7 +58,7 @@ describe('#dlqEventsController', () => {
 
       expect(statusCode).toBe(statusCodes.ok)
       expect(dlqClient.list).toHaveBeenCalledWith(expect.any(String), {
-        limit: 10
+        limit: 25
       })
       expect(result).toEqual(expect.stringContaining('DLQ process'))
       expect(result).toEqual(expect.stringContaining('evt-1'))
@@ -83,18 +82,18 @@ describe('#dlqEventsController', () => {
       expect(result).not.toEqual(expect.stringContaining('govuk-table'))
     })
 
-    test('Should show a success banner after a replay redirect', async () => {
+    test('Should show a success banner after a replay-all redirect', async () => {
       dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
 
       const { result } = await server.inject({
         method: 'GET',
-        url: '/dlq-events?replayed=2'
+        url: '/dlq-events?replayed=1'
       })
 
-      expect(result).toEqual(expect.stringContaining('Replayed 2 message(s).'))
+      expect(result).toEqual(expect.stringContaining('Replay-all started'))
     })
 
-    test('Should show a success banner after a delete redirect', async () => {
+    test('Should show a success banner after a delete-all redirect', async () => {
       dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
 
       const { result } = await server.inject({
@@ -102,7 +101,7 @@ describe('#dlqEventsController', () => {
         url: '/dlq-events?deleted=1'
       })
 
-      expect(result).toEqual(expect.stringContaining('Deleted 1 message(s).'))
+      expect(result).toEqual(expect.stringContaining('Delete-all started'))
     })
 
     test('Should show an error banner after an action-failed redirect', async () => {
@@ -126,7 +125,6 @@ describe('#dlqEventsController', () => {
           {
             id: 'evt-1',
             message_group_id: 'group-a',
-            approximate_receive_count: 1,
             body: 'not json'
           }
         ],
@@ -141,73 +139,43 @@ describe('#dlqEventsController', () => {
       expect(statusCode).toBe(statusCodes.ok)
       expect(result).toEqual(expect.stringContaining('not json'))
     })
-
-    test('Should show an error banner when nothing was selected', async () => {
-      dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
-
-      const { result } = await server.inject({
-        method: 'GET',
-        url: '/dlq-events?error=none-selected'
-      })
-
-      expect(result).toEqual(
-        expect.stringContaining('Select at least one message.')
-      )
-    })
   })
 
   describe('POST /dlq-events', () => {
-    test('Should replay the selected ids and redirect with a count', async () => {
-      dlqClient.replay.mockResolvedValue()
+    test('Should start a replay-all and redirect with a success banner', async () => {
+      dlqClient.replayAll.mockResolvedValue()
 
       const { statusCode, headers } = await server.inject({
         method: 'POST',
         url: '/dlq-events',
-        payload: { ids: ['evt-1', 'evt-2'], action: 'replay' }
+        payload: { action: 'replay-all' }
       })
 
-      expect(dlqClient.replay).toHaveBeenCalledWith(
-        ['evt-1', 'evt-2'],
-        expect.any(String)
-      )
+      expect(dlqClient.replayAll).toHaveBeenCalledWith(expect.any(String))
       expect(statusCode).toBe(REDIRECT)
-      expect(headers.location).toBe('/dlq-events?replayed=2')
+      expect(headers.location).toBe('/dlq-events?replayed=1')
     })
 
-    test('Should delete a single selected id and redirect with a count', async () => {
-      dlqClient.deleteEvents.mockResolvedValue()
+    test('Should start a delete-all and redirect with a success banner', async () => {
+      dlqClient.deleteAll.mockResolvedValue()
 
       const { headers } = await server.inject({
         method: 'POST',
         url: '/dlq-events',
-        payload: { ids: 'evt-1', action: 'delete' }
+        payload: { action: 'delete-all' }
       })
 
-      expect(dlqClient.deleteEvents).toHaveBeenCalledWith(
-        ['evt-1'],
-        expect.any(String)
-      )
+      expect(dlqClient.deleteAll).toHaveBeenCalledWith(expect.any(String))
       expect(headers.location).toBe('/dlq-events?deleted=1')
     })
 
-    test('Should redirect with an error when nothing is selected', async () => {
-      const { headers } = await server.inject({
-        method: 'POST',
-        url: '/dlq-events',
-        payload: { action: 'replay' }
-      })
-
-      expect(headers.location).toBe('/dlq-events?error=none-selected')
-      expect(dlqClient.replay).not.toHaveBeenCalled()
-    })
-
     test('Should redirect with action-failed when the gateway call throws', async () => {
-      dlqClient.replay.mockRejectedValue(new Error('gateway down'))
+      dlqClient.replayAll.mockRejectedValue(new Error('gateway down'))
 
       const { headers } = await server.inject({
         method: 'POST',
         url: '/dlq-events',
-        payload: { ids: ['evt-1'], action: 'replay' }
+        payload: { action: 'replay-all' }
       })
 
       expect(headers.location).toBe('/dlq-events?error=action-failed')

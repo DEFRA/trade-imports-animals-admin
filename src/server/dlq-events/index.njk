@@ -29,46 +29,39 @@
           Showing {{ messages.length }} of approximately {{ approximateCount }} message(s) on the dead-letter queue.
         </p>
 
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Id</th>
+              <th scope="col" class="govuk-table__header">Message group</th>
+              <th scope="col" class="govuk-table__header">Body</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for message in messages %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ message.id }}</td>
+                <td class="govuk-table__cell">{{ message.messageGroupId }}</td>
+                <td class="govuk-table__cell">
+                  <details class="govuk-details">
+                    <summary class="govuk-details__summary">
+                      <span class="govuk-details__summary-text">View JSON</span>
+                    </summary>
+                    <div class="govuk-details__text">
+                      <pre class="govuk-body-s" style="white-space: pre-wrap; word-break: break-all;">{{ message.bodyJson }}</pre>
+                    </div>
+                  </details>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
         <form method="post" action="/dlq-events" novalidate>
           <input type="hidden" name="crumb" value="{{ crumb }}">
-          <table class="govuk-table">
-            <thead class="govuk-table__head">
-              <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header" aria-label="Select">
-                  <input type="checkbox" id="select-all" aria-label="Select all messages">
-                </th>
-                <th scope="col" class="govuk-table__header">Id</th>
-                <th scope="col" class="govuk-table__header">Message group</th>
-                <th scope="col" class="govuk-table__header">Body</th>
-              </tr>
-            </thead>
-            <tbody class="govuk-table__body">
-              {% for message in messages %}
-                <tr class="govuk-table__row">
-                  <td class="govuk-table__cell">
-                    <input type="checkbox" class="dlq-checkbox" name="ids" value="{{ message.id }}"
-                           aria-label="Select message {{ message.id }}">
-                  </td>
-                  <td class="govuk-table__cell">{{ message.id }}</td>
-                  <td class="govuk-table__cell">{{ message.messageGroupId }}</td>
-                  <td class="govuk-table__cell">
-                    <details class="govuk-details">
-                      <summary class="govuk-details__summary">
-                        <span class="govuk-details__summary-text">View JSON</span>
-                      </summary>
-                      <div class="govuk-details__text">
-                        <pre class="govuk-body-s" style="white-space: pre-wrap; word-break: break-all;">{{ message.bodyJson }}</pre>
-                      </div>
-                    </details>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-
           <div class="govuk-button-group">
-            {{ govukButton({ text: "Replay", name: "action", value: "replay" }) }}
-            {{ govukButton({ text: "Delete", name: "action", value: "delete", classes: "govuk-button--warning" }) }}
+            {{ govukButton({ text: "Replay all", name: "action", value: "replay-all" }) }}
+            {{ govukButton({ text: "Delete all", name: "action", value: "delete-all", classes: "govuk-button--warning" }) }}
           </div>
         </form>
       {% else %}
@@ -77,9 +70,4 @@
 
     </div>
   </div>
-{% endblock %}
-
-{% block bodyEnd %}
-  {{ super() }}
-  <script type="module" src="{{ getAssetPath('dlq-events.js') }}"></script>
 {% endblock %}
