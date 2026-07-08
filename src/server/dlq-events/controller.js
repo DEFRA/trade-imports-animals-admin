@@ -2,8 +2,9 @@ import { getTraceId } from '@defra/hapi-tracing'
 import { dlqClient } from '../common/clients/dlq-client.js'
 
 const DLQ_EVENTS_PATH = '/dlq-events'
-const PAGE_LIMIT = 25
+const PAGE_LIMIT = 20
 const TITLE = 'DLQ process'
+const ACTIONS = new Set(['replay-all', 'delete-all'])
 
 /** Pretty-print a raw message body if it is JSON, otherwise return it as-is. */
 function prettyBody(body) {
@@ -42,13 +43,36 @@ function banner(query) {
       text: 'There was a problem contacting the gateway. Please try again.'
     }
   }
+  if (query.error === 'invalid-action') {
+    return {
+      type: 'error',
+      text: 'That was not a recognised action. Please try again.'
+    }
+  }
   return null
 }
 
 export const dlqEventsController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
-    const response = await dlqClient.list(traceId, { limit: PAGE_LIMIT })
+
+    let response
+    try {
+      response = await dlqClient.list(traceId, { limit: PAGE_LIMIT })
+    } catch {
+      return h.view('dlq-events/index', {
+        pageTitle: TITLE,
+        heading: TITLE,
+        breadcrumbs: [{ text: 'Home', href: '/' }, { text: TITLE }],
+        messages: [],
+        approximateCount: 0,
+        banner: {
+          type: 'error',
+          text: 'There was a problem contacting the gateway. Please try again.'
+        }
+      })
+    }
+
     const messages = (response?.messages ?? []).map(toRow)
 
     return h.view('dlq-events/index', {
@@ -66,6 +90,10 @@ export const dlqEventsActionController = {
   async handler(request, h) {
     const traceId = getTraceId() ?? ''
     const action = request.payload?.action
+
+    if (!ACTIONS.has(action)) {
+      return h.redirect(`${DLQ_EVENTS_PATH}?error=invalid-action`)
+    }
 
     try {
       if (action === 'delete-all') {

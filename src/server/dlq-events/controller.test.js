@@ -39,7 +39,7 @@ describe('#dlqEventsController', () => {
   })
 
   describe('GET /dlq-events', () => {
-    test('Should list the first 25 messages and render the table', async () => {
+    test('Should list the first 20 messages and render the table', async () => {
       dlqClient.list.mockResolvedValue({
         messages: [
           {
@@ -58,13 +58,32 @@ describe('#dlqEventsController', () => {
 
       expect(statusCode).toBe(statusCodes.ok)
       expect(dlqClient.list).toHaveBeenCalledWith(expect.any(String), {
-        limit: 25
+        limit: 20
       })
       expect(result).toEqual(expect.stringContaining('DLQ process'))
       expect(result).toEqual(expect.stringContaining('evt-1'))
       expect(result).toEqual(expect.stringContaining('group-a'))
       expect(result).toEqual(expect.stringContaining('View JSON'))
       expect(result).toEqual(expect.stringContaining('approximately 5'))
+    })
+
+    test('Should show an error banner when the gateway list call fails', async () => {
+      dlqClient.list.mockRejectedValue(new Error('gateway down'))
+
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: '/dlq-events'
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(result).toEqual(
+        expect.stringContaining(
+          'There was a problem contacting the gateway. Please try again.'
+        )
+      )
+      expect(result).toEqual(
+        expect.stringContaining('no messages on the dead-letter queue')
+      )
     })
 
     test('Should render the empty state when there are no messages', async () => {
@@ -179,6 +198,30 @@ describe('#dlqEventsController', () => {
       })
 
       expect(headers.location).toBe('/dlq-events?error=action-failed')
+    })
+
+    test('Should redirect with invalid-action and not call the gateway for an unrecognised action', async () => {
+      const { headers } = await server.inject({
+        method: 'POST',
+        url: '/dlq-events',
+        payload: { action: 'not-a-real-action' }
+      })
+
+      expect(dlqClient.replayAll).not.toHaveBeenCalled()
+      expect(dlqClient.deleteAll).not.toHaveBeenCalled()
+      expect(headers.location).toBe('/dlq-events?error=invalid-action')
+    })
+
+    test('Should redirect with invalid-action when no action is supplied', async () => {
+      const { headers } = await server.inject({
+        method: 'POST',
+        url: '/dlq-events',
+        payload: {}
+      })
+
+      expect(dlqClient.replayAll).not.toHaveBeenCalled()
+      expect(dlqClient.deleteAll).not.toHaveBeenCalled()
+      expect(headers.location).toBe('/dlq-events?error=invalid-action')
     })
   })
 })
