@@ -101,57 +101,33 @@ describe('#dlqEventsController', () => {
       expect(result).not.toEqual(expect.stringContaining('govuk-table'))
     })
 
-    test('Should show a success banner after a replay-all redirect', async () => {
-      dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
+    test.each([
+      ['?replayed=1', 'Replay-all started'],
+      ['?deleted=1', 'Delete-all started'],
+      [
+        '?error=action-failed',
+        'There was a problem contacting the gateway. Please try again.'
+      ],
+      [
+        '?error=invalid-action',
+        'That was not a recognised action. Please try again.'
+      ]
+    ])(
+      'Should show a banner after a %s redirect',
+      async (queryString, expectedBannerText) => {
+        dlqClient.list.mockResolvedValue({
+          messages: [],
+          approximate_count: 0
+        })
 
-      const { result } = await server.inject({
-        method: 'GET',
-        url: '/dlq-events?replayed=1'
-      })
+        const { result } = await server.inject({
+          method: 'GET',
+          url: `/dlq-events${queryString}`
+        })
 
-      expect(result).toEqual(expect.stringContaining('Replay-all started'))
-    })
-
-    test('Should show a success banner after a delete-all redirect', async () => {
-      dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
-
-      const { result } = await server.inject({
-        method: 'GET',
-        url: '/dlq-events?deleted=1'
-      })
-
-      expect(result).toEqual(expect.stringContaining('Delete-all started'))
-    })
-
-    test('Should show an error banner after an action-failed redirect', async () => {
-      dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
-
-      const { result } = await server.inject({
-        method: 'GET',
-        url: '/dlq-events?error=action-failed'
-      })
-
-      expect(result).toEqual(
-        expect.stringContaining(
-          'There was a problem contacting the gateway. Please try again.'
-        )
-      )
-    })
-
-    test('Should show an error banner after an invalid-action redirect', async () => {
-      dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
-
-      const { result } = await server.inject({
-        method: 'GET',
-        url: '/dlq-events?error=invalid-action'
-      })
-
-      expect(result).toEqual(
-        expect.stringContaining(
-          'That was not a recognised action. Please try again.'
-        )
-      )
-    })
+        expect(result).toEqual(expect.stringContaining(expectedBannerText))
+      }
+    )
 
     test('Should render a non-JSON message body as-is', async () => {
       dlqClient.list.mockResolvedValue({
