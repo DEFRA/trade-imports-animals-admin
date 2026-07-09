@@ -138,6 +138,21 @@ describe('#dlqEventsController', () => {
       )
     })
 
+    test('Should show an error banner after an invalid-action redirect', async () => {
+      dlqClient.list.mockResolvedValue({ messages: [], approximate_count: 0 })
+
+      const { result } = await server.inject({
+        method: 'GET',
+        url: '/dlq-events?error=invalid-action'
+      })
+
+      expect(result).toEqual(
+        expect.stringContaining(
+          'That was not a recognised action. Please try again.'
+        )
+      )
+    })
+
     test('Should render a non-JSON message body as-is', async () => {
       dlqClient.list.mockResolvedValue({
         messages: [

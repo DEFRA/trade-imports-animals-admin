@@ -83,6 +83,11 @@ describe('#dlqClient', () => {
         status: 500
       })
       expect(mockLoggerError).toHaveBeenCalledTimes(1)
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Failed to list DLQ messages: 500 Internal Server Error'
+        )
+      )
     })
   })
 
@@ -117,6 +122,11 @@ describe('#dlqClient', () => {
         status: 401
       })
       expect(mockLoggerError).toHaveBeenCalledTimes(1)
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Failed to start DLQ replay-all: 401 Unauthorized'
+        )
+      )
     })
   })
 
@@ -151,6 +161,11 @@ describe('#dlqClient', () => {
         status: 500
       })
       expect(mockLoggerError).toHaveBeenCalledTimes(1)
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Failed to start DLQ delete-all: 500 Internal Server Error'
+        )
+      )
     })
   })
 })

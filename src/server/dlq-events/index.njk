@@ -61,8 +61,8 @@
           <input type="hidden" name="crumb" value="{{ crumb }}">
           <input type="hidden" name="action" id="dlq-action-input" value="">
           <div class="govuk-button-group">
-            {{ govukButton({ text: "Replay all", name: "action", value: "replay-all" }) }}
-            {{ govukButton({ text: "Delete all", classes: "govuk-button--warning", attributes: { id: "delete-all-btn", type: "button" } }) }}
+            {{ govukButton({ text: "Replay all", type: "button", attributes: { id: "replay-all-btn" } }) }}
+            {{ govukButton({ text: "Delete all", classes: "govuk-button--warning", type: "button", attributes: { id: "delete-all-btn" } }) }}
           </div>
         </form>
 

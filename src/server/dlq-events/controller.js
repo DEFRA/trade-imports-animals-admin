@@ -59,7 +59,8 @@ export const dlqEventsController = {
     let response
     try {
       response = await dlqClient.list(traceId, { limit: PAGE_LIMIT })
-    } catch {
+    } catch (err) {
+      request.logger.error({ err }, 'Failed to list DLQ messages')
       return h.view('dlq-events/index', {
         pageTitle: TITLE,
         heading: TITLE,
@@ -102,7 +103,8 @@ export const dlqEventsActionController = {
       }
       await dlqClient.replayAll(traceId)
       return h.redirect(`${DLQ_EVENTS_PATH}?replayed=1`)
-    } catch {
+    } catch (err) {
+      request.logger.error({ err }, 'Failed to run DLQ action')
       return h.redirect(`${DLQ_EVENTS_PATH}?error=action-failed`)
     }
   }
