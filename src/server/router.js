@@ -5,6 +5,7 @@ import { about } from './about/index.js'
 import { health } from './health/index.js'
 import { notifications } from './notifications/index.js'
 import { outboxEvents } from './outbox-events/index.js'
+import { dlqEvents } from './dlq-events/index.js'
 import { signout } from './signout/index.js'
 import { serveStaticFiles } from './common/helpers/serve-static-files.js'
 import { config } from '../config/config.js'
@@ -21,7 +22,7 @@ export const router = {
       // Application specific routes, add your own routes here
 
       const authEnabled = config.get('auth.enabled')
-      const routes = [home, about, notifications, outboxEvents]
+      const routes = [home, about, notifications, outboxEvents, dlqEvents]
 
       if (authEnabled) {
         routes.push(signout)

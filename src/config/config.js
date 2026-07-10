@@ -331,6 +331,14 @@ export const config = convict({
     default: 'local-trade-imports-animals-admin-secret',
     env: 'TRADE_IMPORTS_ANIMALS_ADMIN_SECRET',
     sensitive: true
+  },
+  dynamicsGatewayApi: {
+    baseUrl: {
+      doc: 'Trade Imports Dynamics Gateway API base URL (DLQ list/replay/delete)',
+      format: String,
+      default: 'http://localhost:8088',
+      env: 'TRADE_IMPORTS_DYNAMICS_GATEWAY_URL'
+    }
   }
 })
 
