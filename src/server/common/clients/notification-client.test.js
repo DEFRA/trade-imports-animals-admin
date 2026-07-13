@@ -199,6 +199,70 @@ describe('#notificationClient', () => {
     })
   })
 
+  describe('replay', () => {
+    const referenceNumber = 'GBN-AG-26-ABC123'
+    const userId = 'user-abc-123'
+
+    describe('When replay is called successfully', () => {
+      test('Should send POST request to /notifications/{ref}/replay and return response body', async () => {
+        const responseBody = { eventsReplayed: 2 }
+        fetch.mockResolvedValueOnce({
+          ok: true,
+          json: vi.fn().mockResolvedValue(responseBody)
+        })
+
+        const result = await notificationClient.replay(
+          referenceNumber,
+          traceId,
+          userId
+        )
+
+        expect(fetch).toHaveBeenCalledTimes(1)
+        expect(fetch).toHaveBeenCalledWith(
+          `http://mock-backend/notifications/${referenceNumber}/replay`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-trace-id': traceId,
+              'User-Id': userId,
+              'Trade-Imports-Animals-Admin-Secret': 'test-admin-secret'
+            }
+          }
+        )
+        expect(result).toEqual(responseBody)
+      })
+    })
+
+    describe('When userId is not provided', () => {
+      test('Should reject with userId is required error', async () => {
+        await expect(
+          notificationClient.replay(referenceNumber, traceId, undefined)
+        ).rejects.toThrow('userId is required to replay notifications')
+      })
+    })
+
+    describe('When replay request fails', () => {
+      test('Should throw an error with status and statusText', async () => {
+        fetch.mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error'
+        })
+
+        await expect(
+          notificationClient.replay(referenceNumber, traceId, userId)
+        ).rejects.toMatchObject({
+          message: 'Failed to replay outbox events',
+          status: 500,
+          statusText: 'Internal Server Error'
+        })
+
+        expect(mockLoggerError).toHaveBeenCalledTimes(1)
+      })
+    })
+  })
+
   describe('getOutboxEvents', () => {
     describe('When getOutboxEvents is called successfully', () => {
       test('Should send GET request to /notifications/{ref}/outbox-events and return events', async () => {

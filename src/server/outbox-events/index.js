@@ -1,4 +1,7 @@
-import { outboxEventsController } from './controller.js'
+import {
+  outboxEventsController,
+  outboxEventsReplayController
+} from './controller.js'
 
 /**
  * Sets up the routes used in the outbox events page.
@@ -13,6 +16,17 @@ export const outboxEvents = {
           method: 'GET',
           path: '/outbox-events',
           ...outboxEventsController
+        },
+        {
+          method: 'POST',
+          path: '/outbox-events/replay',
+          options: {
+            payload: {
+              parse: true,
+              allow: 'application/x-www-form-urlencoded'
+            }
+          },
+          handler: outboxEventsReplayController.handler
         }
       ])
     }
