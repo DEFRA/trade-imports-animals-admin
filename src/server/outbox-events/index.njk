@@ -84,6 +84,7 @@
           {% endif %}
 
           <form method="post" action="/outbox-events/replay">
+            <input type="hidden" name="crumb" value="{{ crumb }}">
             <input type="hidden" name="referenceNumber" value="{{ referenceNumber }}">
             {{ govukButton({
               text: "Replay all events",
