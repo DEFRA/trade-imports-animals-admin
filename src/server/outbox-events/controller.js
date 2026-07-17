@@ -46,7 +46,7 @@ export const outboxEventsController = {
         const dlq = await dlqClient.list(traceId, { limit: 1 })
         if ((dlq?.approximate_count ?? 0) > 0) {
           dlqWarning = {
-            text: `The DLQ has approximately ${dlq.approximate_count} message(s). Consider clearing or redriving them before replaying to avoid duplicate processing.`
+            text: `The DLQ has approximately ${dlq.approximate_count} message(s). Consider clearing or redriving them before replaying to avoid duplicate processing or silent dropping of replayed messages that are on the DLQ.`
           }
         }
       } catch (err) {
