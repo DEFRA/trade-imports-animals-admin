@@ -68,6 +68,40 @@ export const notificationClient = {
   },
 
   /**
+   * Re-publishes all outbox events for a notification to SNS FIFO in aggregate version order.
+   * The backend is authoritative — the outbox is read-only and no data is mutated.
+   */
+  async replay(referenceNumber, traceId, userId) {
+    if (!userId) {
+      throw new Error('userId is required to replay notifications')
+    }
+
+    const response = await fetch(
+      `${tradeImportsAnimalsBackendUrl}/notifications/${encodeURIComponent(referenceNumber)}/replay`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [tracingHeader]: traceId,
+          'User-Id': userId,
+          'Trade-Imports-Animals-Admin-Secret': adminSecret
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const message = 'Failed to replay outbox events'
+      const error = new Error(message)
+      error.status = response.status
+      error.statusText = response.statusText
+      logger.error(`${message}: ${response.status} ${response.statusText}`)
+      throw error
+    }
+
+    return response.json()
+  },
+
+  /**
    * Deletes notifications from the backend by reference numbers
    */
   async delete(referenceNumbers, traceId, userId) {

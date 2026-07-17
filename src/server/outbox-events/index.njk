@@ -1,12 +1,28 @@
 {% extends 'layouts/page.njk' %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
 {% block content %}
   {{ appHeading({
     text: heading,
     caption: "trade-imports-animals-admin"
   }) }}
+
+  {% if banner %}
+    {% if banner.type === 'success' %}
+      {{ govukNotificationBanner({
+        type: "success",
+        html: '<p class="govuk-body">' + banner.text + '</p>'
+      }) }}
+    {% else %}
+      {{ govukNotificationBanner({
+        titleText: "There is a problem",
+        html: '<p class="govuk-body">' + banner.text + '</p>'
+      }) }}
+    {% endif %}
+  {% endif %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -59,6 +75,24 @@
               {% endfor %}
             </tbody>
           </table>
+
+          {% if dlqWarning %}
+            {{ govukWarningText({
+              text: dlqWarning.text,
+              iconFallbackText: "Warning"
+            }) }}
+          {% endif %}
+
+          <form method="post" action="/outbox-events/replay">
+            <input type="hidden" name="crumb" value="{{ crumb }}">
+            <input type="hidden" name="referenceNumber" value="{{ referenceNumber }}">
+            {{ govukButton({
+              text: "Replay all events",
+              classes: "govuk-button--warning",
+              preventDoubleClick: true
+            }) }}
+          </form>
+
         {% else %}
           <p class="govuk-body">No outbox events found for <strong>{{ referenceNumber }}</strong>.</p>
         {% endif %}
