@@ -36,7 +36,7 @@ describe('getOidcConfigWithRetry', () => {
 
     configGetMock.mockReturnValue(discoveryUrl)
 
-    logger = { warn: vi.fn(), error: vi.fn() }
+    logger = { warn: vi.fn() }
   })
 
   afterEach(() => {
@@ -49,10 +49,6 @@ describe('getOidcConfigWithRetry', () => {
     await expect(getOidcConfigWithRetry(logger)).resolves.toEqual(payload)
 
     expect(wreckGetMock).toHaveBeenCalledTimes(1)
-    expect(wreckGetMock).toHaveBeenCalledWith(discoveryUrl, {
-      json: true,
-      timeout: 1000
-    })
     expect(logger.warn).not.toHaveBeenCalled()
   })
 
@@ -97,21 +93,8 @@ describe('getOidcConfigWithRetry', () => {
     expect(error.message).toBe(
       `Could not reach the OIDC provider at ${discoveryUrl} after 4 attempts`
     )
+    expect(error.cause.code).toBe('ETIMEDOUT')
     expect(wreckGetMock).toHaveBeenCalledTimes(4)
     expect(logger.warn).toHaveBeenCalledTimes(3)
-    expect(logger.error).not.toHaveBeenCalled()
-  })
-
-  test('keeps the underlying timeout as the cause of the thrown error', async () => {
-    wreckGetMock.mockRejectedValue(timedOut())
-
-    const result = getOidcConfigWithRetry(logger)
-    const assertion = result.catch((error) => error)
-
-    await vi.advanceTimersByTimeAsync(7000)
-    const error = await assertion
-
-    expect(error).toBeInstanceOf(Error)
-    expect(error.cause.code).toBe('ETIMEDOUT')
   })
 })

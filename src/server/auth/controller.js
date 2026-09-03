@@ -4,8 +4,6 @@ import { verifyToken } from '../../auth/verify-token.js'
 import { getPermissions } from '../../auth/get-permissions.js'
 import { getSafeRedirect } from '../../auth/get-safe-redirect.js'
 
-const unableToSignIn = (h) => h.view('auth/unauthorised')
-
 export const authController = {
   signin: {
     handler: async function (request, h) {
@@ -27,14 +25,11 @@ export const authController = {
           },
           'Bell auth failed for /auth/sign-in-oidc'
         )
-        return unableToSignIn(h)
+        return h.view('auth/unauthorised')
       }
 
       const { profile, token, refreshToken } = request.auth.credentials
-      // Verifying the token against Defra Identity's public key reaches OIDC
-      // discovery and the JWKS endpoint, so a slow identity provider fails
-      // here on a sign-in the user has already completed. Show the sign-in
-      // failure page rather than a server error.
+      // verify token returned from Defra Identity against public key
       try {
         await verifyToken(token)
       } catch (err) {
@@ -42,7 +37,7 @@ export const authController = {
           { err },
           'Token verification failed for /auth/sign-in-oidc'
         )
-        return unableToSignIn(h)
+        return h.view('auth/unauthorised')
       }
 
       // Typically permissions for the selected organisation would be available in the `roles` property of the token

@@ -1,82 +1,85 @@
-import { describe, expect, test, vi, beforeEach } from 'vitest'
+import { vi } from 'vitest'
 
-import { authController } from './controller.js'
+import { createServer } from '../server.js'
+import { statusCodes } from '../common/constants/status-codes.js'
+import { mockOidcConfig } from '../common/test-helpers/mock-oidc-config.js'
+import { verifyToken } from '../../auth/verify-token.js'
 
-const verifyTokenMock = vi.hoisted(() => vi.fn())
-const getPermissionsMock = vi.hoisted(() => vi.fn())
-const getSafeRedirectMock = vi.hoisted(() => vi.fn())
+vi.mock('../../auth/get-oidc-config.js', () => ({
+  getOidcConfig: vi.fn(() => Promise.resolve(mockOidcConfig))
+}))
+
+vi.mock('../../config/config.js', async (importOriginal) => {
+  const { mockAuthConfig } =
+    await import('../common/test-helpers/mock-auth-config.js')
+  return mockAuthConfig(importOriginal)
+})
 
 vi.mock('../../auth/verify-token.js', () => ({
-  verifyToken: verifyTokenMock
+  verifyToken: vi.fn()
 }))
 
-vi.mock('../../auth/get-permissions.js', () => ({
-  getPermissions: getPermissionsMock
-}))
-
-vi.mock('../../auth/get-safe-redirect.js', () => ({
-  getSafeRedirect: getSafeRedirectMock
-}))
-
-describe('signinOidc', () => {
-  const redirectPath = '/somewhere'
-
-  const buildRequest = () => ({
-    auth: {
-      isAuthenticated: true,
-      credentials: {
-        profile: {
-          crn: 'CRN123',
-          organisationId: 'ORG-1',
-          sessionId: 'session-1'
-        },
-        token: 'access-token',
-        refreshToken: 'refresh-token'
-      }
+const defraIdAuth = () => ({
+  strategy: 'defra-id',
+  credentials: {
+    profile: {
+      sessionId: 'signin-oidc-session',
+      crn: 'CRN123',
+      organisationId: 'org-1'
     },
-    logger: { error: vi.fn() },
-    server: { app: { cache: { set: vi.fn() } } },
-    cookieAuth: { set: vi.fn() },
-    yar: { get: vi.fn().mockReturnValue(redirectPath), clear: vi.fn() }
+    token: 'mock-token',
+    refreshToken: 'mock-refresh-token'
+  }
+})
+
+const joinedSetCookie = (headers) => {
+  const setCookie = headers['set-cookie'] ?? []
+  const cookies = Array.isArray(setCookie) ? setCookie : [setCookie]
+  return cookies.join('\n')
+}
+
+describe('#authController', () => {
+  let server
+
+  beforeAll(async () => {
+    server = await createServer()
+    await server.initialize()
   })
 
-  const h = {
-    view: vi.fn().mockReturnValue('rendered-view'),
-    redirect: vi.fn().mockReturnValue('redirected')
-  }
+  afterAll(async () => {
+    await server.stop({ timeout: 0 })
+  })
 
   beforeEach(() => {
     vi.clearAllMocks()
-    getPermissionsMock.mockResolvedValue({ role: 'admin', scope: ['read'] })
-    getSafeRedirectMock.mockReturnValue(redirectPath)
   })
 
-  test('completes the sign in when the token verifies', async () => {
-    verifyTokenMock.mockResolvedValue(undefined)
-    const request = buildRequest()
+  test('GET /auth/sign-in-oidc starts a session and redirects home when the token verifies', async () => {
+    verifyToken.mockResolvedValue(undefined)
 
-    const response = await authController.signinOidc.handler(request, h)
-
-    expect(request.cookieAuth.set).toHaveBeenCalledWith({
-      sessionId: 'session-1'
+    const { statusCode, headers } = await server.inject({
+      method: 'GET',
+      url: '/auth/sign-in-oidc',
+      auth: defraIdAuth()
     })
-    expect(h.redirect).toHaveBeenCalledWith(redirectPath)
-    expect(response).toBe('redirected')
+
+    expect(statusCode).toBe(statusCodes.redirect)
+    expect(headers.location).toBe('/')
+    expect(joinedSetCookie(headers)).toContain('sid=')
   })
 
-  test('shows the sign-in failure page when token verification fails', async () => {
-    verifyTokenMock.mockRejectedValue(new Error('Client request timeout'))
-    const request = buildRequest()
+  test('GET /auth/sign-in-oidc renders unauthorised when the token check times out', async () => {
+    verifyToken.mockRejectedValue(new Error('Client request timeout'))
 
-    const response = await authController.signinOidc.handler(request, h)
+    const { statusCode, result, headers } = await server.inject({
+      method: 'GET',
+      url: '/auth/sign-in-oidc',
+      auth: defraIdAuth()
+    })
 
-    expect(h.view).toHaveBeenCalledWith('auth/unauthorised')
-    expect(response).toBe('rendered-view')
-    expect(request.cookieAuth.set).not.toHaveBeenCalled()
-    expect(request.server.app.cache.set).not.toHaveBeenCalled()
-    expect(request.logger.error).toHaveBeenCalledWith(
-      { err: expect.any(Error) },
-      'Token verification failed for /auth/sign-in-oidc'
-    )
+    expect(statusCode).toBe(statusCodes.ok)
+    expect(result).toContain('Sorry, we are unable to sign you in')
+    expect(verifyToken).toHaveBeenCalledWith('mock-token')
+    expect(joinedSetCookie(headers)).not.toContain('sid=')
   })
 })

@@ -2,7 +2,6 @@ import Wreck from '@hapi/wreck'
 import { getOidcConfig } from './get-oidc-config.js'
 import { config } from '../config/config.js'
 
-// Armed twice per call; higher than OIDC_TIMEOUT_MS for the provider's crypto.
 const TOKEN_ENDPOINT_TIMEOUT_MS = 3000
 
 async function refreshTokens(refreshToken) {

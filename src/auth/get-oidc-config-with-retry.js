@@ -1,9 +1,6 @@
 import { getOidcConfig } from './get-oidc-config.js'
 import { config } from '../config/config.js'
 
-// Discovery runs on the boot path, before the server accepts traffic, so a
-// briefly unavailable identity provider must slow the boot rather than kill
-// the process.
 const MAX_ATTEMPTS = 4
 const FIRST_RETRY_DELAY_MS = 1000
 
