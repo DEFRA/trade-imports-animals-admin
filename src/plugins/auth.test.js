@@ -108,7 +108,7 @@ describe('auth plugin', () => {
     expect(server.auth.default).toHaveBeenCalledWith('session')
   })
 
-  test('register registers no strategy when OIDC discovery fails', async () => {
+  test('register registers no Bell strategy when OIDC discovery fails', async () => {
     getOidcConfigWithRetryMock.mockRejectedValue(
       new Error(
         'OIDC discovery at https://idp.example.com/.well-known/openid-configuration failed after 4 attempts'
@@ -120,7 +120,11 @@ describe('auth plugin', () => {
       'OIDC discovery at'
     )
 
-    expect(server.auth.strategy).not.toHaveBeenCalled()
+    expect(server.auth.strategy).not.toHaveBeenCalledWith(
+      'defra-id',
+      'bell',
+      expect.anything()
+    )
   })
 
   test('getBellOptions.location stores safe redirect and returns redirectUrl', () => {

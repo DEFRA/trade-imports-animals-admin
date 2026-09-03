@@ -33,7 +33,9 @@ describe('getOidcConfigWithRetry', () => {
     wreckGetMock.mockReset()
     configGetMock.mockReset()
 
-    configGetMock.mockReturnValue(discoveryUrl)
+    configGetMock.mockImplementation((key) => {
+      if (key === 'defraId.oidcDiscoveryUrl') return discoveryUrl
+    })
 
     logger = { warn: vi.fn() }
   })
