@@ -78,7 +78,8 @@ describe('refreshTokens', () => {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        json: true
+        json: true,
+        timeout: 3000
       }
     )
   })

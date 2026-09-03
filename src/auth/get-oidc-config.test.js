@@ -32,7 +32,10 @@ describe('getOidcConfig', () => {
     await expect(getOidcConfig()).resolves.toEqual(payload)
 
     expect(configGetMock).toHaveBeenCalledWith('defraId.oidcDiscoveryUrl')
-    expect(wreckGetMock).toHaveBeenCalledWith(discoveryUrl, { json: true })
+    expect(wreckGetMock).toHaveBeenCalledWith(discoveryUrl, {
+      json: true,
+      timeout: 1000
+    })
   })
 
   test('propagates Wreck errors', async () => {
@@ -45,6 +48,9 @@ describe('getOidcConfig', () => {
     wreckGetMock.mockRejectedValue(err)
 
     await expect(getOidcConfig()).rejects.toThrow('discovery failed')
-    expect(wreckGetMock).toHaveBeenCalledWith(discoveryUrl, { json: true })
+    expect(wreckGetMock).toHaveBeenCalledWith(discoveryUrl, {
+      json: true,
+      timeout: 1000
+    })
   })
 })
