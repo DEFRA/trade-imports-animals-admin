@@ -1,5 +1,4 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest'
-
 import { authPlugin, getBellOptions, getCookieOptions } from './auth.js'
 
 const getOidcConfigWithRetryMock = vi.hoisted(() => vi.fn())
@@ -113,12 +112,14 @@ describe('auth plugin', () => {
 
   test('register registers no strategy when OIDC discovery fails', async () => {
     getOidcConfigWithRetryMock.mockRejectedValue(
-      new Error('Could not reach the OIDC provider')
+      new Error(
+        'OIDC discovery at https://idp.example.com/.well-known/openid-configuration failed after 4 attempts'
+      )
     )
     const server = buildServer()
 
     await expect(authPlugin.plugin.register(server)).rejects.toThrow(
-      'Could not reach the OIDC provider'
+      'OIDC discovery at'
     )
     expect(server.auth.strategy).not.toHaveBeenCalled()
   })
@@ -139,6 +140,22 @@ describe('auth plugin', () => {
 
     expect(getSafeRedirectMock).toHaveBeenCalledWith('/some/path?x=1')
     expect(request.yar.set).toHaveBeenCalledWith('redirect', '/safe/redirect')
+    expect(location).toBe('http://localhost:3000/auth/sign-in-oidc')
+  })
+
+  test('getBellOptions.location stores nothing when no redirect is requested', () => {
+    const options = getBellOptions(oidcConfig)
+
+    const request = {
+      query: {},
+      yar: {
+        set: vi.fn()
+      }
+    }
+
+    const location = options.location(request)
+
+    expect(request.yar.set).not.toHaveBeenCalled()
     expect(location).toBe('http://localhost:3000/auth/sign-in-oidc')
   })
 

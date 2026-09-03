@@ -5,7 +5,6 @@ export const statusCodes = {
   unauthorized: 401,
   forbidden: 403,
   notFound: 404,
-  redirect: 302,
   imATeapot: 418,
   internalServerError: 500
 }

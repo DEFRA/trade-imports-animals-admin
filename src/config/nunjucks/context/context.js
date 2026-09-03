@@ -23,9 +23,7 @@ async function context(request) {
     }
   }
 
-  const sessionId = request.auth?.isAuthenticated
-    ? request.auth.credentials.sessionId
-    : null
+  const sessionId = request.auth?.credentials?.sessionId
   const authData = sessionId
     ? await request.server.app.cache.get(sessionId)
     : null

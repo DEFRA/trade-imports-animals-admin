@@ -1,37 +1,32 @@
 import { getOidcConfig } from './get-oidc-config.js'
 import { config } from '../config/config.js'
 
-const MAX_ATTEMPTS = 4
-const FIRST_RETRY_DELAY_MS = 1000
-
-const retryDelayMs = (attempt) => FIRST_RETRY_DELAY_MS * 2 ** (attempt - 1)
+const SECOND_MS = 1000
+const RETRY_DELAYS_MS = [SECOND_MS, 2 * SECOND_MS, 4 * SECOND_MS]
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 async function getOidcConfigWithRetry(logger) {
   const discoveryUrl = config.get('defraId.oidcDiscoveryUrl')
-  let lastError
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+  for (let attempt = 1; ; attempt++) {
     try {
       return await getOidcConfig()
     } catch (err) {
-      lastError = err
-
-      if (attempt < MAX_ATTEMPTS) {
-        logger.warn(
-          { err, discoveryUrl, attempt },
-          'OIDC discovery failed, retrying'
+      const delayMs = RETRY_DELAYS_MS[attempt - 1]
+      if (delayMs === undefined) {
+        throw new Error(
+          `OIDC discovery at ${discoveryUrl} failed after ${attempt} attempts`,
+          { cause: err }
         )
-        await wait(retryDelayMs(attempt))
       }
+      logger.warn(
+        { err, discoveryUrl, attempt },
+        'OIDC discovery failed, retrying'
+      )
+      await wait(delayMs)
     }
   }
-
-  throw new Error(
-    `Could not reach the OIDC provider at ${discoveryUrl} after ${MAX_ATTEMPTS} attempts`,
-    { cause: lastError }
-  )
 }
 
 export { getOidcConfigWithRetry }

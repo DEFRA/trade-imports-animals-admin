@@ -1,14 +1,14 @@
 import { createPublicKey } from 'crypto'
 import Wreck from '@hapi/wreck'
 import Jwt from '@hapi/jwt'
-import { getOidcConfig, OIDC_TIMEOUT_MS } from './get-oidc-config.js'
+import { getOidcConfig, OIDC_DOCUMENT_TIMEOUT_MS } from './get-oidc-config.js'
 
 async function verifyToken(token) {
   const { jwks_uri: uri } = await getOidcConfig()
 
   const { payload } = await Wreck.get(uri, {
     json: true,
-    timeout: OIDC_TIMEOUT_MS
+    timeout: OIDC_DOCUMENT_TIMEOUT_MS
   })
   const { keys } = payload
 
