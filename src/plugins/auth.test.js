@@ -46,9 +46,7 @@ describe('auth plugin', () => {
       strategy: vi.fn(),
       default: vi.fn()
     },
-    logger: {
-      warn: vi.fn()
-    }
+    logger: { warn: vi.fn() }
   })
 
   beforeEach(() => {
@@ -121,6 +119,7 @@ describe('auth plugin', () => {
     await expect(authPlugin.plugin.register(server)).rejects.toThrow(
       'OIDC discovery at'
     )
+
     expect(server.auth.strategy).not.toHaveBeenCalled()
   })
 
