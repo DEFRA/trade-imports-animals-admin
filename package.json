@@ -76,7 +76,7 @@
     "@babel/preset-env": "7.29.2",
     "@vitest/coverage-v8": "4.1.11",
     "audit-ci": "7.1.0",
-    "autoprefixer": "10.4.27",
+    "autoprefixer": "10.6.1",
     "babel-loader": "10.1.1",
     "cheerio": "1.2.0",
     "clean-webpack-plugin": "4.0.0",
