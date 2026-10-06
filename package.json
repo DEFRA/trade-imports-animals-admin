@@ -101,9 +101,5 @@
     "webpack": "5.111.1",
     "webpack-assets-manifest": "6.5.4",
     "webpack-cli": "7.2.3"
-  },
-  "overrides": {
-    "vite": "6.4.3",
-    "esbuild": "0.28.1"
   }
 }
