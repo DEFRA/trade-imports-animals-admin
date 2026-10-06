@@ -26,7 +26,8 @@ describe('#buildRedisClient', () => {
         db: 0,
         host: config.get('redis').host,
         keyPrefix: 'trade-imports-animals-admin:',
-        port: 6379
+        port: 6379,
+        protocol: 2
       })
     })
   })
@@ -48,7 +49,13 @@ describe('#buildRedisClient', () => {
         {
           dnsLookup: expect.any(Function),
           keyPrefix: 'trade-imports-animals-admin:',
-          redisOptions: { db: 0, password: 'pass', tls: {}, username: 'user' },
+          redisOptions: {
+            db: 0,
+            password: 'pass',
+            protocol: 2,
+            tls: {},
+            username: 'user'
+          },
           slotsRefreshTimeout: 10000
         }
       )
