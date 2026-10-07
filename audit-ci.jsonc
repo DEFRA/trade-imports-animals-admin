@@ -1,0 +1,14 @@
+{
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+  "high": true,
+  "report-type": "summary",
+  "allowlist": [
+    {
+      "GHSA-vfj7-8cjw-p6xm": {
+        "active": true,
+        "notes": "braces stack-exhaustion DoS through deeply nested patterns; no fixed version published (all versions <=3.0.3 affected). Owner: Sam Farrington",
+        "expiry": "2027-01-02"
+      }
+    }
+  ]
+}

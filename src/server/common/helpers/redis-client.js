@@ -14,6 +14,9 @@ export function buildRedisClient(redisConfig) {
   const db = 0
   const keyPrefix = redisConfig.keyPrefix
   const host = redisConfig.host
+  // ioredis 6 defaults to RESP3 (HELLO 3). Pin RESP2 so the wire protocol
+  // to ElastiCache is unchanged from ioredis 5.
+  const protocol = 2
   let redisClient
 
   const credentials =
@@ -30,6 +33,7 @@ export function buildRedisClient(redisConfig) {
       port,
       host,
       db,
+      protocol,
       keyPrefix,
       ...credentials,
       ...tls
@@ -48,6 +52,7 @@ export function buildRedisClient(redisConfig) {
         dnsLookup: (address, callback) => callback(null, address),
         redisOptions: {
           db,
+          protocol,
           ...credentials,
           ...tls
         }
