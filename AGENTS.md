@@ -9,6 +9,6 @@
 - Set-up used by two tests goes in the shared helper. Promoting a helper deletes the local copies.
 - Every branch that changes an outcome logs once, with the ids support searches by. Log `{ err }`, never only the message. No request or response bodies at INFO.
 - A test title states what its assertions prove. A test must fail without the change it covers.
-- `npm run lint` enforces the id, silent-catch and error-log rules through `eslint-rules/code-quality.js`.
+- `npm run lint` enforces the id, silent-catch and error-log rules through `eslint-rules/code-quality.js`, and the id rule in Nunjucks comments through `eslint-rules/template-comments.js`.
 
 Canonical text: `.claude/rules/code-quality.md` in the trade-imports-workspace repo.

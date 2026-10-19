@@ -1,18 +1,30 @@
 const TRACKING_REFERENCES = [
-  { pattern: /\bEUDPA-\d+/, label: 'a ticket key' },
-  { pattern: /\b(?:c|d|q|inc|req)-\d{3}\b/, label: 'a backlog or ruling id' },
-  { pattern: /\bDesign Release\b/i, label: 'a release name' },
-  { pattern: /\bDR2\.?1\b/, label: 'a release name' },
-  { pattern: /\bRuled\b/, label: 'a ruling reference' },
-  { pattern: /\bthe real service\b/i, label: 'session vocabulary' }
+  { pattern: /\bEUDPA-\d+/i, label: 'a ticket key' },
+  { pattern: /\b(?:c|d|q|inc|req)-\d{3}\b/i, label: 'a backlog or ruling id' },
+  { pattern: /\bdesign release\b/i, label: 'a release name' },
+  { pattern: /\bDR ?\d+(?:\.\d+)?\b/i, label: 'a release name' },
+  { pattern: /\bruled\b/i, label: 'a ruling reference' },
+  { pattern: /\breal service\b/i, label: 'session vocabulary' }
 ]
 
 const TEST_FUNCTION_NAMES = new Set(['describe', 'it', 'test', 'suite'])
 
 const LOGGED_LEVELS = new Set(['error', 'warn'])
 
-const findTrackingReference = (text) =>
-  TRACKING_REFERENCES.find(({ pattern }) => pattern.test(text))
+const FUNCTION_TYPES = new Set([
+  'ArrowFunctionExpression',
+  'FunctionExpression'
+])
+
+export const findTrackingReference = (text) => {
+  for (const { pattern, label } of TRACKING_REFERENCES) {
+    const found = pattern.exec(text)
+    if (found) {
+      return { label, match: found[0] }
+    }
+  }
+  return undefined
+}
 
 const rootCalleeName = (callee) => {
   let node = callee
@@ -39,9 +51,30 @@ const literalText = (node) => {
     return node.value
   }
   if (node?.type === 'TemplateLiteral') {
-    return node.quasis.map((quasi) => quasi.value.cooked).join('')
+    return node.quasis.map((quasi) => quasi.value.cooked ?? '').join('${}')
   }
   return undefined
+}
+
+const textNodesOf = (node) => {
+  if (node?.type === 'ArrayExpression') {
+    return node.elements.flatMap(textNodesOf)
+  }
+  const text = literalText(node)
+  return text === undefined ? [] : [{ node, text }]
+}
+
+const tagTextNodesOf = (details) => {
+  if (details?.type !== 'ObjectExpression') {
+    return []
+  }
+  const tag = details.properties.find(
+    (property) =>
+      property.type === 'Property' &&
+      property.key.type === 'Identifier' &&
+      property.key.name === 'tag'
+  )
+  return tag ? textNodesOf(tag.value) : []
 }
 
 const noTrackingReferences = {
@@ -49,28 +82,21 @@ const noTrackingReferences = {
     type: 'suggestion',
     docs: {
       description:
-        'Disallow ticket keys, backlog or ruling ids, release names and session vocabulary in comments and test titles'
+        'Disallow ticket keys, backlog or ruling ids, release names and session vocabulary in comments, test titles and test tags'
     },
     schema: [],
     messages: {
       inComment:
         'Comment contains {{label}} ("{{match}}"). Say what the code does instead.',
       inTestTitle:
-        'Test title contains {{label}} ("{{match}}"). State what the assertions prove instead.'
+        'Test title or tag contains {{label}} ("{{match}}"). State what the assertions prove instead.'
     }
   },
   create(context) {
     const reportIfTracked = (node, text, messageId) => {
       const reference = findTrackingReference(text)
       if (reference) {
-        context.report({
-          node,
-          messageId,
-          data: {
-            label: reference.label,
-            match: text.match(reference.pattern)[0]
-          }
-        })
+        context.report({ node, messageId, data: reference })
       }
     }
 
@@ -84,9 +110,12 @@ const noTrackingReferences = {
         if (!isTestFunctionCall(node)) {
           return
         }
-        const title = literalText(node.arguments[0])
-        if (title !== undefined) {
-          reportIfTracked(node.arguments[0], title, 'inTestTitle')
+        const [title, details] = node.arguments
+        for (const { node: textNode, text } of [
+          ...textNodesOf(title),
+          ...tagTextNodesOf(details)
+        ]) {
+          reportIfTracked(textNode, text, 'inTestTitle')
         }
       }
     }
@@ -98,13 +127,8 @@ const isCatchCall = ({ callee }) =>
   callee.property.type === 'Identifier' &&
   callee.property.name === 'catch'
 
-const FUNCTION_TYPES = new Set([
-  'ArrowFunctionExpression',
-  'FunctionExpression'
-])
-
 const isSilentHandler = (handler) => {
-  if (!FUNCTION_TYPES.has(handler?.type) || handler.params.length) {
+  if (!FUNCTION_TYPES.has(handler?.type)) {
     return false
   }
   const { body } = handler
@@ -168,20 +192,23 @@ const isCatchHandler = (node) =>
   node.parent.arguments[0] === node &&
   isCatchCall(node.parent)
 
-const caughtErrorName = (ancestor) => {
+const caughtErrorParam = (ancestor) => {
   if (ancestor.type === 'CatchClause') {
-    return ancestor.param?.type === 'Identifier'
-      ? ancestor.param.name
-      : undefined
+    return ancestor.param
   }
-  if (isCatchHandler(ancestor) && ancestor.params[0]?.type === 'Identifier') {
-    return ancestor.params[0].name
+  if (isCatchHandler(ancestor)) {
+    return ancestor.params[0]
   }
   return undefined
 }
 
-const innermostCaughtErrorName = (ancestors) =>
-  ancestors.map(caughtErrorName).findLast((name) => name !== undefined)
+const innermostCaughtErrorName = (ancestors) => {
+  const param = ancestors.map(caughtErrorParam).findLast(Boolean)
+  if (!param) {
+    return undefined
+  }
+  return param.type === 'Identifier' ? param.name : 'err'
+}
 
 const noMessageOnlyErrorLog = {
   meta: {
@@ -213,11 +240,78 @@ const noMessageOnlyErrorLog = {
   }
 }
 
+const termPattern = (term) =>
+  new RegExp(
+    term
+      .split(/[-_ ]/)
+      .map((part) => part.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`))
+      .join('[-_ ]?'),
+    'i'
+  )
+
+const noSetVocabulary = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description:
+        'Disallow obligation-set names and codes in the set-agnostic platform layer'
+    },
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          terms: { type: 'array', items: { type: 'string' } }
+        },
+        additionalProperties: false
+      }
+    ],
+    messages: {
+      setName:
+        '"{{match}}" names an obligation set. The platform layer is set-agnostic: take set data from the configuration the set gateway supplies.'
+    }
+  },
+  create(context) {
+    const patterns = (context.options[0]?.terms ?? []).map(termPattern)
+    const reportIfSetName = (node, text) => {
+      for (const pattern of patterns) {
+        const found = pattern.exec(text)
+        if (found) {
+          context.report({
+            node,
+            messageId: 'setName',
+            data: { match: found[0] }
+          })
+          return
+        }
+      }
+    }
+    return {
+      Program() {
+        for (const comment of context.sourceCode.getAllComments()) {
+          reportIfSetName(comment, comment.value)
+        }
+      },
+      Literal(node) {
+        if (typeof node.value === 'string') {
+          reportIfSetName(node, node.value)
+        }
+      },
+      TemplateElement(node) {
+        reportIfSetName(node, node.value.cooked ?? '')
+      },
+      Identifier(node) {
+        reportIfSetName(node, node.name)
+      }
+    }
+  }
+}
+
 export const codeQuality = {
   meta: { name: 'code-quality' },
   rules: {
     'no-tracking-references': noTrackingReferences,
     'no-silent-catch': noSilentCatch,
-    'no-message-only-error-log': noMessageOnlyErrorLog
+    'no-message-only-error-log': noMessageOnlyErrorLog,
+    'no-set-vocabulary': noSetVocabulary
   }
 }
