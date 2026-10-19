@@ -117,6 +117,12 @@ To view them in your command line run:
 npm run
 ```
 
+### Lint
+
+`npm run lint` checks JavaScript, Nunjucks comments and stylesheets.
+`eslint.config.js` ignores everything in `.gitignore` globally, because
+neostandard 0.14 applies its own `ignores` only to its own layers.
+
 ### Update dependencies
 
 To update dependencies use [npm-check-updates](https://github.com/raineorshine/npm-check-updates):
