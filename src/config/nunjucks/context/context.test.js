@@ -34,7 +34,6 @@ describe('context and cache', () => {
       })
 
       beforeEach(async () => {
-        // Return JSON string
         mockReadFileSync.mockReturnValue(`{
         "application.js": "javascripts/application.js",
         "stylesheets/application.scss": "stylesheets/application.css"
@@ -121,6 +120,7 @@ describe('context and cache', () => {
     })
 
     describe('When webpack manifest file read fails', () => {
+      const readError = new Error('ENOENT: no such file or directory')
       let contextImport
 
       beforeAll(async () => {
@@ -128,15 +128,17 @@ describe('context and cache', () => {
       })
 
       beforeEach(() => {
-        mockReadFileSync.mockReturnValue(new Error('File not found'))
+        mockReadFileSync.mockImplementation(() => {
+          throw readError
+        })
 
-        contextImport.context(mockRequest)
+        return contextImport.context(mockRequest)
       })
 
-      test('Should log the read error and that the Webpack Manifest file is not available', () => {
+      test('Should log the read error with the manifest file name', () => {
         expect(mockLoggerError).toHaveBeenCalledWith(
-          { err: expect.any(Error) },
-          'Webpack assets-manifest.json not found'
+          { err: readError },
+          'Could not read Webpack assets-manifest.json'
         )
       })
     })
@@ -154,7 +156,6 @@ describe('context and cache', () => {
       })
 
       beforeEach(async () => {
-        // Return JSON string
         mockReadFileSync.mockReturnValue(`{
         "application.js": "javascripts/application.js",
         "stylesheets/application.scss": "stylesheets/application.css"

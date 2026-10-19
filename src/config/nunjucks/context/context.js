@@ -21,7 +21,7 @@ async function context(request) {
     } catch (error) {
       logger.error(
         { err: error },
-        `Webpack ${path.basename(manifestPath)} not found`
+        `Could not read Webpack ${path.basename(manifestPath)}`
       )
     }
   }
