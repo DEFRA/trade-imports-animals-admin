@@ -102,5 +102,10 @@
     "webpack": "5.111.1",
     "webpack-assets-manifest": "6.5.4",
     "webpack-cli": "7.2.3"
+  },
+  "overrides": {
+    "blankie": {
+      "@hapi/joi": "npm:joi@17.13.8"
+    }
   }
 }
