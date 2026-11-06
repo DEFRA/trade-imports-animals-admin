@@ -1,37 +1,33 @@
 import { vi } from 'vitest'
 
+import { config } from '../config/config.js'
+import { restoreConfigAfterEach } from '../server/common/test-helpers/restore-config-after-each.js'
 import { getOidcConfig } from './get-oidc-config.js'
 
-// Must be hoisted too (because vi.mock factories are hoisted)
 const wreckGetMock = vi.hoisted(() => vi.fn())
-const configGetMock = vi.hoisted(() => vi.fn())
 
 vi.mock('@hapi/wreck', () => ({
   default: { get: wreckGetMock }
 }))
 
-vi.mock('../config/config.js', () => ({
-  config: { get: configGetMock }
-}))
-
 describe('getOidcConfig', () => {
+  const discoveryUrl =
+    'https://mock-auth-server/idp/.well-known/openid-configuration'
+
+  restoreConfigAfterEach(['defraId.oidcDiscoveryUrl'])
+
   beforeEach(() => {
     wreckGetMock.mockReset()
-    configGetMock.mockReset()
+    config.set('defraId.oidcDiscoveryUrl', discoveryUrl)
   })
 
   test('fetches discovery document and returns payload', async () => {
-    const discoveryUrl =
-      'https://mock-auth-server/idp/.well-known/openid-configuration'
-
     const payload = { authorization_endpoint: 'https://idp/auth' }
 
-    configGetMock.mockReturnValue(discoveryUrl)
     wreckGetMock.mockResolvedValue({ payload })
 
     await expect(getOidcConfig()).resolves.toEqual(payload)
 
-    expect(configGetMock).toHaveBeenCalledWith('defraId.oidcDiscoveryUrl')
     expect(wreckGetMock).toHaveBeenCalledWith(discoveryUrl, {
       json: true,
       timeout: 1000
@@ -39,13 +35,7 @@ describe('getOidcConfig', () => {
   })
 
   test('propagates Wreck errors', async () => {
-    const discoveryUrl =
-      'https://mock-auth-server/idp/.well-known/openid-configuration'
-
-    const err = new Error('discovery failed')
-
-    configGetMock.mockReturnValue(discoveryUrl)
-    wreckGetMock.mockRejectedValue(err)
+    wreckGetMock.mockRejectedValue(new Error('discovery failed'))
 
     await expect(getOidcConfig()).rejects.toThrow('discovery failed')
     expect(wreckGetMock).toHaveBeenCalledWith(discoveryUrl, {

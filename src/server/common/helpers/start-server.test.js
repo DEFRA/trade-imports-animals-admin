@@ -1,28 +1,21 @@
 import { createServer } from 'node:http'
-import { vi } from 'vitest'
+import { getDefaultAutoSelectFamilyAttemptTimeout } from 'node:net'
 import Wreck from '@hapi/wreck'
 
-import { mockAuthConfig } from '../test-helpers/mock-auth-config.js'
+import { config } from '../../../config/config.js'
+import { restoreConfigAfterEach } from '../test-helpers/restore-config-after-each.js'
 import { restoreWreckAgentAfterEach } from '../test-helpers/restore-wreck-agent.js'
-
-vi.mock('../../../config/config.js', (importOriginal) =>
-  mockAuthConfig(importOriginal, { authEnabled: false })
-)
+import { startServer } from './start-server.js'
 
 describe('#startServer', () => {
-  let startServer
-
-  beforeAll(async () => {
-    vi.stubEnv('PORT', '3097')
-
-    ;({ startServer } = await import('./start-server.js'))
-  })
-
-  afterAll(() => {
-    vi.unstubAllEnvs()
-  })
-
+  restoreConfigAfterEach(['auth.enabled', 'httpProxy', 'port'])
   restoreWreckAgentAfterEach()
+
+  beforeEach(() => {
+    config.set('auth.enabled', false)
+    config.set('httpProxy', null)
+    config.set('port', 3097)
+  })
 
   describe('When server starts', () => {
     let server
@@ -54,6 +47,10 @@ describe('#startServer', () => {
 
     test('Should send Wreck calls over kept-alive connections when no proxy is configured', () => {
       expect(Wreck.agents.http.keepAlive).toBe(true)
+    })
+
+    test('Should give each address of a host one second to connect before trying the next', () => {
+      expect(getDefaultAutoSelectFamilyAttemptTimeout()).toBe(1000)
     })
   })
 
