@@ -1,5 +1,6 @@
 import { config } from '../config/config.js'
 import { getSignOutUrl } from './get-sign-out-url.js'
+import { restoreConfigAfterEach } from '../server/common/test-helpers/restore-config-after-each.js'
 
 const DEFAULT_CONFIG = {
   'defraId.browserFacingHostnameRewrite.enabled': true,
@@ -22,19 +23,7 @@ function setConfig(overrides) {
 }
 
 describe('getSignOutUrl', () => {
-  let originalConfig
-
-  beforeEach(() => {
-    originalConfig = Object.fromEntries(
-      configKeys.map((key) => [key, config.get(key)])
-    )
-  })
-
-  afterEach(() => {
-    for (const [key, value] of Object.entries(originalConfig)) {
-      config.set(key, value)
-    }
-  })
+  restoreConfigAfterEach(configKeys)
 
   test('builds signout URL from discovery URL', async () => {
     setConfig({

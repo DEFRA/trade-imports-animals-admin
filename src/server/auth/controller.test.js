@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { createServer } from '../server.js'
+import { useAuthEnabledServer } from '../common/test-helpers/use-auth-enabled-server.js'
 import { statusCodes } from '../common/constants/status-codes.js'
 import { mockOidcConfig } from '../common/test-helpers/mock-oidc-config.js'
 import { verifyToken } from '../../auth/verify-token.js'
@@ -7,12 +7,6 @@ import { verifyToken } from '../../auth/verify-token.js'
 vi.mock('../../auth/get-oidc-config.js', () => ({
   getOidcConfig: vi.fn(() => Promise.resolve(mockOidcConfig))
 }))
-
-vi.mock('../../config/config.js', async (importOriginal) => {
-  const { mockAuthConfig } =
-    await import('../common/test-helpers/mock-auth-config.js')
-  return mockAuthConfig(importOriginal)
-})
 
 vi.mock('../../auth/verify-token.js', () => ({
   verifyToken: vi.fn()
@@ -32,21 +26,12 @@ const defraIdAuth = () => ({
 })
 
 describe('#authController', () => {
-  let server
-
-  beforeAll(async () => {
-    server = await createServer()
-    await server.initialize()
-  })
-
-  afterAll(async () => {
-    await server.stop({ timeout: 0 })
-  })
+  const running = useAuthEnabledServer()
 
   test('GET /auth/sign-in-oidc renders unauthorised when token verification fails', async () => {
     verifyToken.mockRejectedValue(new Error('Client request timeout'))
 
-    const { statusCode, payload, headers } = await server.inject({
+    const { statusCode, payload, headers } = await running.server.inject({
       method: 'GET',
       url: '/auth/sign-in-oidc',
       auth: defraIdAuth()

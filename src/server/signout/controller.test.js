@@ -1,33 +1,21 @@
 import { vi } from 'vitest'
 
-import { createServer } from '../server.js'
+import { useAuthEnabledServer } from '../common/test-helpers/use-auth-enabled-server.js'
 import { mockOidcConfig } from '../common/test-helpers/mock-oidc-config.js'
 
 vi.mock('../../auth/get-oidc-config.js', () => ({
   getOidcConfig: vi.fn(() => Promise.resolve(mockOidcConfig))
 }))
 
-vi.mock('../../config/config.js', async (importOriginal) => {
-  const { mockAuthConfig } =
-    await import('../common/test-helpers/mock-auth-config.js')
-  return mockAuthConfig(importOriginal)
-})
-
 describe('GET /signout', () => {
-  let server
+  const running = useAuthEnabledServer()
 
-  beforeAll(async () => {
-    server = await createServer()
-    await server.initialize()
-  })
-
-  afterAll(async () => {
-    await server.stop({ timeout: 0 })
+  afterAll(() => {
     vi.restoreAllMocks()
   })
 
   test('clears auth and yar cookies before redirecting', async () => {
-    const { statusCode, headers } = await server.inject({
+    const { statusCode, headers } = await running.server.inject({
       method: 'GET',
       url: '/signout',
       auth: {
