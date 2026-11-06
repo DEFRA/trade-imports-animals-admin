@@ -1,68 +1,78 @@
+import { createServer } from 'node:http'
 import { vi } from 'vitest'
+import Wreck from '@hapi/wreck'
 
-import hapi from '@hapi/hapi'
-import { statusCodes } from '../constants/status-codes.js'
+import { mockAuthConfig } from '../test-helpers/mock-auth-config.js'
+import { restoreWreckAgentAfterEach } from '../test-helpers/restore-wreck-agent.js'
 
-vi.mock('../../../config/config.js', async (importOriginal) => {
-  const { config } = await importOriginal()
-  const originalGet = config.get.bind(config)
-  return {
-    config: {
-      get: (key) => (key === 'auth.enabled' ? false : originalGet(key))
-    }
-  }
-})
+vi.mock('../../../config/config.js', (importOriginal) =>
+  mockAuthConfig(importOriginal, { authEnabled: false })
+)
 
 describe('#startServer', () => {
-  let createServerSpy
-  let hapiServerSpy
-  let startServerImport
-  let createServerImport
+  let startServer
 
   beforeAll(async () => {
     vi.stubEnv('PORT', '3097')
 
-    createServerImport = await import('../../server.js')
-    startServerImport = await import('./start-server.js')
-
-    createServerSpy = vi.spyOn(createServerImport, 'createServer')
-    hapiServerSpy = vi.spyOn(hapi, 'server')
+    ;({ startServer } = await import('./start-server.js'))
   })
 
   afterAll(() => {
     vi.unstubAllEnvs()
   })
 
+  restoreWreckAgentAfterEach()
+
   describe('When server starts', () => {
     let server
 
-    afterAll(async () => {
+    beforeEach(async () => {
+      server = await startServer()
+    })
+
+    afterEach(async () => {
       await server.stop({ timeout: 0 })
     })
 
-    test('Should start up server as expected', async () => {
-      server = await startServerImport.startServer()
-
-      expect(createServerSpy).toHaveBeenCalled()
-      expect(hapiServerSpy).toHaveBeenCalled()
-
+    test('Should answer GET /health with success once started', async () => {
       const { result, statusCode } = await server.inject({
         method: 'GET',
         url: '/health'
       })
 
-      expect(result).toEqual({ message: 'success' })
-      expect(statusCode).toBe(statusCodes.ok)
+      expect({
+        started: server.info.started > 0,
+        statusCode,
+        result
+      }).toEqual({
+        started: true,
+        statusCode: 200,
+        result: { message: 'success' }
+      })
+    })
+
+    test('Should send Wreck calls over kept-alive connections when no proxy is configured', () => {
+      expect(Wreck.agents.http.keepAlive).toBe(true)
     })
   })
 
-  describe('When server start fails', () => {
-    test('Should log failed startup message', async () => {
-      createServerSpy.mockRejectedValue(new Error('Server failed to start'))
+  describe('When the configured port is already in use', () => {
+    let portHolder
 
-      await expect(startServerImport.startServer()).rejects.toThrow(
-        'Server failed to start'
-      )
+    beforeEach(async () => {
+      portHolder = createServer()
+      await new Promise((resolve) => portHolder.listen(3097, resolve))
+    })
+
+    afterEach(async () => {
+      await new Promise((resolve) => portHolder.close(resolve))
+    })
+
+    test('Should reject with the address-in-use error', async () => {
+      await expect(startServer()).rejects.toMatchObject({
+        code: 'EADDRINUSE'
+      })
     })
   })
 })
