@@ -76,7 +76,7 @@
   "devDependencies": {
     "@babel/core": "8.0.6",
     "@babel/preset-env": "8.0.6",
-    "@vitest/coverage-v8": "5.0.3",
+    "@vitest/coverage-v8": "5.0.5",
     "audit-ci": "7.1.0",
     "autoprefixer": "10.6.1",
     "babel-loader": "10.1.1",
