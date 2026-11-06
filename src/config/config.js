@@ -210,23 +210,23 @@ export const config = convict({
       default: `http://localhost:${process.env.PORT ?? 3000}/auth/sign-out-oidc`,
       env: 'DEFRA_ID_SIGN_OUT_REDIRECT_URL'
     },
-    signOutHostnameRewrite: {
+    browserFacingHostnameRewrite: {
       enabled: {
-        doc: 'Rewrite internal OIDC hostnames in sign-out URL for local environments',
+        doc: 'Rewrite internal OIDC hostnames in Defra ID URLs, for local environments',
         format: Boolean,
         default: !isProduction,
-        env: 'DEFRA_ID_SIGN_OUT_HOSTNAME_REWRITE_ENABLED'
+        env: 'DEFRA_ID_BROWSER_FACING_HOSTNAME_REWRITE_ENABLED'
       },
       from: {
-        doc: 'OIDC hostnames list for sign-out URL re-write',
+        doc: 'Internal OIDC hostnames covered by the rewrite',
         format: Array,
         default: ['host.docker.internal', 'trade-imports-defra-id-stub']
       },
       to: {
-        doc: 'Target hostname used for sign-out OIDC URL rewrite',
+        doc: 'Hostname the rewrite produces',
         format: String,
         default: 'localhost',
-        env: 'DEFRA_ID_SIGN_OUT_HOSTNAME_REWRITE_TO'
+        env: 'DEFRA_ID_BROWSER_FACING_HOSTNAME_REWRITE_TO'
       }
     },
     refreshTokens: {
