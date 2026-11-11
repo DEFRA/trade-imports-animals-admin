@@ -1,12 +1,14 @@
 import { vi } from 'vitest'
 
 import { dlqClient } from './dlq-client.js'
+import { recordEmfDocuments } from '../test-helpers/emf-documents.js'
 
 const mockLoggerError = vi.fn()
 
 vi.mock('../helpers/logging/logger.js', () => ({
   createLogger: () => ({
     info: vi.fn(),
+    warn: vi.fn(),
     error: (...args) => mockLoggerError(...args)
   })
 }))
@@ -17,10 +19,81 @@ vi.mock('../../../config/config.js', () => ({
       if (key === 'dynamicsGatewayApi.baseUrl') return 'http://mock-gateway'
       if (key === 'tracing.header') return 'x-trace-id'
       if (key === 'tradeImportsAnimalsAdminSecret') return 'test-admin-secret'
+      if (key === 'metrics.namespace') return 'test-namespace'
       return undefined
     })
   }
 }))
+
+describe('#dlqClient metrics', () => {
+  const emf = recordEmfDocuments()
+  let originalFetch
+
+  beforeEach(() => {
+    originalFetch = global.fetch
+    global.fetch = vi.fn()
+  })
+
+  afterEach(() => {
+    global.fetch = originalFetch
+    vi.restoreAllMocks()
+  })
+
+  test.each([
+    ['list', 'list-dlq', { ok: true, json: async () => ({}) }],
+    ['replayAll', 'replay-all-dlq', { ok: true }],
+    ['deleteAll', 'delete-all-dlq', { ok: true }]
+  ])(
+    'Should record %s as a dynamics-gateway %s call',
+    async (method, operation, response) => {
+      fetch.mockResolvedValueOnce(response)
+
+      await dlqClient[method]('trace-123')
+
+      await vi.waitFor(() =>
+        expect(emf.documentsWith('external.call.duration')).toEqual([
+          expect.objectContaining({
+            dependency: 'dynamics-gateway',
+            operation,
+            'external.call.failure': 0
+          })
+        ])
+      )
+    }
+  )
+
+  test.each([
+    ['replayAll', 'dlq.replay-all'],
+    ['deleteAll', 'dlq.delete-all']
+  ])(
+    'Should count a successful %s as the admin action %s',
+    async (method, action) => {
+      fetch.mockResolvedValueOnce({ ok: true })
+
+      await dlqClient[method]('trace-123')
+
+      await vi.waitFor(() =>
+        expect(emf.documentsWith('admin.action')).toEqual([
+          expect.objectContaining({ action, 'admin.action': 1 })
+        ])
+      )
+    }
+  )
+
+  test.each(['replayAll', 'deleteAll'])(
+    'Should count no admin action when %s is refused',
+    async (method) => {
+      fetch.mockResolvedValueOnce({ ok: false, status: 500 })
+
+      await expect(dlqClient[method]('trace-123')).rejects.toThrow()
+
+      await vi.waitFor(() =>
+        expect(emf.documentsWith('external.call.failure')).toHaveLength(1)
+      )
+      expect(emf.documentsWith('admin.action')).toEqual([])
+    }
+  )
+})
 
 describe('#dlqClient', () => {
   const traceId = 'trace-123'

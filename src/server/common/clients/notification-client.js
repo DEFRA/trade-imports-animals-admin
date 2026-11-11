@@ -1,18 +1,20 @@
 import { config } from '../../../config/config.js'
-import { createLogger } from '../helpers/logging/logger.js'
+import { measuredFetch } from '../helpers/metrics/measured-fetch.js'
+import { recordAdminAction } from '../helpers/metrics/admin-action-metrics.js'
+import { requestFailed } from './request-failed.js'
 
 const tradeImportsAnimalsBackendUrl = config.get(
   'tradeImportsAnimalsBackendApi.baseUrl'
 )
 const tracingHeader = config.get('tracing.header')
 const adminSecret = config.get('tradeImportsAnimalsAdminSecret')
-const logger = createLogger()
+const dependency = 'animals-backend'
 
 export const notificationClient = {
   /**
-   * Retrieves a page of notification reference numbers from the backend
+   * Retrieves a page of notification reference numbers
    * (ReferenceNumberPageResponse: { content, page, size, numberOfElements,
-   * totalElements, totalPages }). `page` is 0-based to match the backend.
+   * totalElements, totalPages }). `page` is 0-based.
    */
   async getAllReferenceNumbers(_request, traceId, { page = 0 } = {}) {
     const url = new URL(
@@ -20,21 +22,23 @@ export const notificationClient = {
     )
     url.searchParams.set('page', page)
 
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        [tracingHeader]: traceId
+    const response = await measuredFetch(
+      { dependency, operation: 'get-reference-numbers' },
+      url.toString(),
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          [tracingHeader]: traceId
+        }
       }
-    })
+    )
 
     if (!response.ok) {
-      const message = 'Failed to get all notification reference numbers'
-      const error = new Error(message)
-      error.status = response.status
-      error.statusText = response.statusText
-      logger.error(`${message}: ${response.status} ${response.statusText}`)
-      throw error
+      throw requestFailed(
+        'Failed to get all notification reference numbers',
+        response
+      )
     }
 
     return response.json()
@@ -44,7 +48,8 @@ export const notificationClient = {
    * Retrieves all outbox events for a notification reference number
    */
   async getOutboxEvents(referenceNumber, traceId) {
-    const response = await fetch(
+    const response = await measuredFetch(
+      { dependency, operation: 'get-outbox-events' },
       `${tradeImportsAnimalsBackendUrl}/notifications/${encodeURIComponent(referenceNumber)}/outbox-events`,
       {
         method: 'GET',
@@ -56,27 +61,23 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const message = 'Failed to get outbox events'
-      const error = new Error(message)
-      error.status = response.status
-      error.statusText = response.statusText
-      logger.error(`${message}: ${response.status} ${response.statusText}`)
-      throw error
+      throw requestFailed('Failed to get outbox events', response)
     }
 
     return response.json()
   },
 
   /**
-   * Re-publishes all outbox events for a notification to SNS FIFO in aggregate version order.
-   * The backend is authoritative — the outbox is read-only and no data is mutated.
+   * Re-publishes all outbox events for a notification in aggregate version
+   * order.
    */
   async replay(referenceNumber, traceId, userId) {
     if (!userId) {
       throw new Error('userId is required to replay notifications')
     }
 
-    const response = await fetch(
+    const response = await measuredFetch(
+      { dependency, operation: 'replay' },
       `${tradeImportsAnimalsBackendUrl}/notifications/${encodeURIComponent(referenceNumber)}/replay`,
       {
         method: 'POST',
@@ -90,26 +91,23 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const message = 'Failed to replay outbox events'
-      const error = new Error(message)
-      error.status = response.status
-      error.statusText = response.statusText
-      logger.error(`${message}: ${response.status} ${response.statusText}`)
-      throw error
+      throw requestFailed('Failed to replay outbox events', response)
     }
 
+    recordAdminAction('notification.replay')
     return response.json()
   },
 
   /**
-   * Deletes notifications from the backend by reference numbers
+   * Deletes notifications by reference numbers
    */
   async delete(referenceNumbers, traceId, userId) {
     if (!userId) {
       throw new Error('userId is required to delete notifications')
     }
 
-    const response = await fetch(
+    const response = await measuredFetch(
+      { dependency, operation: 'delete' },
       `${tradeImportsAnimalsBackendUrl}/notifications`,
       {
         method: 'DELETE',
@@ -124,12 +122,9 @@ export const notificationClient = {
     )
 
     if (!response.ok) {
-      const message = 'Failed to delete notifications'
-      const error = new Error(message)
-      error.status = response.status
-      error.statusText = response.statusText
-      logger.error(`${message}: ${response.status} ${response.statusText}`)
-      throw error
+      throw requestFailed('Failed to delete notifications', response)
     }
+
+    recordAdminAction('notification.delete')
   }
 }

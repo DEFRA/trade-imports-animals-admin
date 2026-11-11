@@ -319,6 +319,14 @@ export const config = convict({
       env: 'TRACING_HEADER'
     }
   },
+  metrics: {
+    namespace: {
+      doc: 'CloudWatch namespace the service publishes its own metrics to',
+      format: String,
+      default: 'trade-imports-animals-admin',
+      env: 'AWS_EMF_NAMESPACE'
+    }
+  },
   tradeImportsAnimalsBackendApi: {
     baseUrl: {
       doc: 'Trade Imports Animals Backend API base URL',

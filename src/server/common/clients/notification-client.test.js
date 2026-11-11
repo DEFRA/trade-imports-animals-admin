@@ -1,12 +1,14 @@
 import { vi } from 'vitest'
 
 import { notificationClient } from './notification-client.js'
+import { recordEmfDocuments } from '../test-helpers/emf-documents.js'
 
 const mockLoggerError = vi.fn()
 
 vi.mock('../helpers/logging/logger.js', () => ({
   createLogger: () => ({
     info: vi.fn(),
+    warn: vi.fn(),
     error: (...args) => mockLoggerError(...args)
   })
 }))
@@ -26,10 +28,92 @@ vi.mock('../../../config/config.js', () => ({
         return 'test-admin-secret'
       }
 
+      if (key === 'metrics.namespace') {
+        return 'test-namespace'
+      }
+
       return undefined
     })
   }
 }))
+
+describe('#notificationClient metrics', () => {
+  const emf = recordEmfDocuments()
+  const traceId = 'trace-123'
+  const userId = 'user-abc-123'
+  const referenceNumber = 'GBN-AG-26-ABC123'
+  let originalFetch
+
+  const calls = {
+    'get-reference-numbers': () =>
+      notificationClient.getAllReferenceNumbers({}, traceId),
+    'get-outbox-events': () =>
+      notificationClient.getOutboxEvents(referenceNumber, traceId),
+    replay: () => notificationClient.replay(referenceNumber, traceId, userId),
+    delete: () => notificationClient.delete([referenceNumber], traceId, userId)
+  }
+
+  beforeEach(() => {
+    originalFetch = global.fetch
+    global.fetch = vi.fn()
+  })
+
+  afterEach(() => {
+    global.fetch = originalFetch
+    vi.restoreAllMocks()
+  })
+
+  test.each(Object.keys(calls))(
+    'Should record %s as an animals-backend call',
+    async (operation) => {
+      fetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+
+      await calls[operation]()
+
+      await vi.waitFor(() =>
+        expect(emf.documentsWith('external.call.duration')).toEqual([
+          expect.objectContaining({
+            dependency: 'animals-backend',
+            operation,
+            'external.call.failure': 0
+          })
+        ])
+      )
+    }
+  )
+
+  test.each([
+    ['replay', 'notification.replay'],
+    ['delete', 'notification.delete']
+  ])(
+    'Should count a successful %s as the admin action %s',
+    async (operation, action) => {
+      fetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+
+      await calls[operation]()
+
+      await vi.waitFor(() =>
+        expect(emf.documentsWith('admin.action')).toEqual([
+          expect.objectContaining({ action, 'admin.action': 1 })
+        ])
+      )
+    }
+  )
+
+  test.each(['replay', 'delete'])(
+    'Should count no admin action when %s is refused',
+    async (operation) => {
+      fetch.mockResolvedValueOnce({ ok: false, status: 500 })
+
+      await expect(calls[operation]()).rejects.toThrow()
+
+      await vi.waitFor(() =>
+        expect(emf.documentsWith('external.call.failure')).toHaveLength(1)
+      )
+      expect(emf.documentsWith('admin.action')).toEqual([])
+    }
+  )
+})
 
 describe('#notificationClient', () => {
   const traceId = 'trace-123'
