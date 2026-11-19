@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   publish:
-    uses: DEFRA/trade-imports-workspace/.github/workflows/publish-branch.yml@chore/EUDPA-802-dependabot-e2e
+    uses: DEFRA/trade-imports-workspace/.github/workflows/publish-branch.yml@main
     with:
       image-name: trade-imports-animals-admin
       build-dependabot: true
