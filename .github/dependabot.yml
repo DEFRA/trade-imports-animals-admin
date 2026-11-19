@@ -49,7 +49,8 @@ updates:
           - '*'
 
     # The nightly job moves these sets in every repo at once, on one branch
-    # name, so Dependabot leaves them alone.
+    # name, so Dependabot leaves them alone. A held package stays at its
+    # current version: Dependabot does not propose the versions it breaks.
     ignore:
       # playwright
       # The frontends record traces that the tests repo and tim read, and a
@@ -63,6 +64,16 @@ updates:
       # green CI cannot prove were applied, so every version goes through the
       # govuk-upgrade skill, one version at a time, across every frontend.
       - dependency-name: 'govuk-frontend'
+      # held: stylelint, since 2026-11-19
+      # stylelint-config-gds 3.0.0, the newest release, has a peer of
+      # stylelint ^17.4.0, so stylelint 18 fails npm ci with ERESOLVE
+      # Failing test: npm ci (Run Pull Request Checks)
+      # Lift it with tim deps lift when a newer stylelint or
+      # stylelint-config-gds clears it.
+      # https://github.com/DEFRA/trade-imports-animals-admin/pull/99
+      - dependency-name: 'stylelint'
+        versions:
+          - '18.x'
 
     # Wait 3 days after a release before proposing it, so a broken release is
     # usually withdrawn first.
