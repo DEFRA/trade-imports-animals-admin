@@ -4,7 +4,10 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DEFRA_trade-imports-animals-admin&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DEFRA_trade-imports-animals-admin)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=DEFRA_trade-imports-animals-admin&metric=coverage)](https://sonarcloud.io/summary/new_code?id=DEFRA_trade-imports-animals-admin)
 
-Core delivery platform Node.js Frontend Template.
+The internal admin interface for the live animals import notification
+service. It lists and deletes notifications in the animals backend, shows a
+notification's outbox events and replays them, and replays or deletes the
+events on the dynamics gateway's dead-letter queue (DLQ).
 
 - [Requirements](#requirements)
   - [Node.js](#nodejs)
@@ -31,8 +34,8 @@ Core delivery platform Node.js Frontend Template.
 
 ### Node.js
 
-Please install [Node.js](http://nodejs.org/) `>= v22` and [npm](https://nodejs.org/) `>= v9`. You will find it
-easier to use the Node Version Manager [nvm](https://github.com/creationix/nvm)
+Node 26.13.1 or later — the floor in `engines`. You will find it easier to use
+the Node Version Manager [nvm](https://github.com/creationix/nvm).
 
 To use the correct version of Node.js for this application, via nvm:
 
@@ -57,8 +60,7 @@ Redis is an in-memory key-value store. Every instance of a service has access to
 to how services might have a database (or MongoDB). All frontend services are given access to a namespaced prefixed that
 matches the service name. e.g. `my-service` will have access to everything in Redis that is prefixed with `my-service`.
 
-If your service does not require a session cache to be shared between instances or if you don't require Redis, you can
-disable setting `SESSION_CACHE_ENGINE=false` or changing the default value in `src/config/index.js`.
+To run without Redis, set `SESSION_CACHE_ENGINE=memory`. The default is set in `src/config/config.js`.
 
 ## Proxy
 
@@ -182,7 +184,7 @@ docker run -p 3000:3000 trade-imports-animals-admin
 
 The full local environment (MongoDB, Floci, Redis, the stubs, and every
 trade-imports-animals service including this one) is the workspace stack in
-[DEFRA/trade-imports-animals-workspace](https://github.com/DEFRA/trade-imports-animals-workspace):
+[DEFRA/trade-imports-workspace](https://github.com/DEFRA/trade-imports-workspace):
 
 ```bash
 # from the workspace root
@@ -193,8 +195,10 @@ tim docker up -e admin  # everything except this service (run it via npm run dev
 
 ### Dependabot
 
-We have added an example dependabot configuration file to the repository. You can enable it by renaming
-the [.github/example.dependabot.yml](.github/example.dependabot.yml) to `.github/dependabot.yml`
+[`.github/dependabot.yml`](.github/dependabot.yml) is generated from `config/dependency-sets.json` in the
+[trade-imports workspace](https://github.com/DEFRA/trade-imports-workspace) by
+`tim deps dependabot trade-imports-animals-admin --write`. Change that file and regenerate rather than editing
+`dependabot.yml` by hand.
 
 ### SonarCloud
 
