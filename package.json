@@ -71,14 +71,14 @@
     "pino": "10.4.0",
     "pino-pretty": "13.2.0",
     "semver": "7.8.6",
-    "undici": "8.12.4"
+    "undici": "8.13.0"
   },
   "devDependencies": {
     "@babel/core": "8.1.2",
     "@babel/preset-env": "8.0.7",
     "@vitest/coverage-v8": "5.1.1",
     "audit-ci": "7.1.0",
-    "autoprefixer": "10.6.2",
+    "autoprefixer": "10.7.0",
     "babel-loader": "10.1.1",
     "cheerio": "1.2.0",
     "clean-webpack-plugin": "4.0.0",
@@ -99,7 +99,7 @@
     "terser-webpack-plugin": "5.6.1",
     "vitest": "5.1.1",
     "vitest-fetch-mock": "0.4.5",
-    "webpack": "5.112.2",
+    "webpack": "5.113.0",
     "webpack-assets-manifest": "6.5.6",
     "webpack-cli": "7.3.1"
   },
